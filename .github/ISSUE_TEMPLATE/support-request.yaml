@@ -1,0 +1,23 @@
+name: Support Request
+description: Ask a question about this package.
+labels:
+  - question
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to submit a support request! To ensure your question hasn’t already been asked and answered, please first search existing issues and ensure you’re running the latest version.
+        
+        If your question is still unanswered, please provide a clear and concise description. Note that we are diligent about documentation, so please check whether your question is answered by the docs before submitting.
+  - type: textarea
+    id: body
+    attributes:
+      label: Support Request
+      description: Please provide a clear and concise question.
+    validations:
+      required: true
+  - type: input
+    id: packageVersion
+    attributes:
+      label: Package Version
+      description: Provide the package version that this relates to, ideally the latest version.

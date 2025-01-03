@@ -1,0 +1,37 @@
+{
+  "name": "putyourlightson/laravel-datastar",
+  "description": "A view-driven, reactive hypermedia framework for Laravel.",
+  "version": "1.0.0-alpha.1",
+  "type": "library",
+  "license": "mit",
+  "require": {
+    "php": "^8.2",
+    "laravel/framework": "^11.0",
+    "starfederation/datastar-php": "1.0.0-beta.5"
+  },
+  "require-dev": {
+    "craftcms/ecs": "dev-main",
+    "craftcms/phpstan": "dev-main"
+  },
+  "autoload": {
+    "psr-4": {
+      "Putyourlightson\\Datastar\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Putyourlightson\\Datastar\\DatastarServiceProvider"
+      ]
+    }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true
+  },
+  "support": {
+    "docs": "https://github.com/putyourlightson/laravel-datastar",
+    "source": "https://github.com/putyourlightson/laravel-datastar",
+    "issues": "https://github.com/putyourlightson/laravel-datastar/issues"
+  }
+}

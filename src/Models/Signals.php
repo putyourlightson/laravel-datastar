@@ -7,13 +7,12 @@ namespace Putyourlightson\Datastar\Models;
 
 use Putyourlightson\Datastar\Services\SseService;
 
-class SignalsModel
+class Signals
 {
-    private array $values;
-
-    public function __construct(array $values)
-    {
-        $this->values = $values;
+    public function __construct(
+        protected array $values,
+        protected SseService $sse,
+    ) {
     }
 
     public function __get(string $name)
@@ -56,7 +55,7 @@ class SignalsModel
     {
         $this->setNestedValue($name, $value);
 
-        app(SseService::class)->mergeSignals($this->getNestedArrayValue($name, $value));
+        $this->sse->mergeSignals($this->getNestedArrayValue($name, $value));
 
         return $this;
     }
@@ -70,7 +69,7 @@ class SignalsModel
             $this->values[$name] = $value;
         }
 
-        app(SseService::class)->mergeSignals($values);
+        $this->sse->mergeSignals($values);
 
         return $this;
     }
@@ -82,7 +81,7 @@ class SignalsModel
     {
         $this->removeNestedValue($name);
 
-        app(SseService::class)->removeSignals([$name]);
+        $this->sse->removeSignals([$name]);
 
         return $this;
     }

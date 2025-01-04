@@ -9,10 +9,10 @@ use Closure;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
-class ConfigModel
+class Config
 {
-    protected const HASH_LENGTH = 64;
     protected const HASH_ALGORITHM = 'sha256';
+    protected const HASH_LENGTH = 64;
 
     public string $view = '';
     public array $variables = [];
@@ -20,7 +20,7 @@ class ConfigModel
     public ?string $csrfToken = null;
 
     /**
-     * Creates a new instance from an encrypted config string.
+     * Creates a new instance from a hashed config string.
      */
     public static function fromHashed(string $config): ?self
     {
@@ -102,8 +102,7 @@ class ConfigModel
      */
     protected function validateVariables(string $attribute, mixed $variables, Closure $fail): void
     {
-//        $signalsVariableName = Datastar::getInstance()->settings->signalsVariableName;
-        $signalsVariableName = 'signals';
+        $signalsVariableName = config('datastar.signalsVariableName');
 
         foreach ($variables as $key => $value) {
             if ($key === $signalsVariableName) {

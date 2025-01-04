@@ -7,8 +7,8 @@ namespace Putyourlightson\Datastar\Services;
 
 use Illuminate\Validation\ValidationException;
 use Putyourlightson\Datastar\Http\Controllers\DatastarController;
-use Putyourlightson\Datastar\Models\ConfigModel;
-use Putyourlightson\Datastar\Models\SignalsModel;
+use Putyourlightson\Datastar\Models\Config;
+use Putyourlightson\Datastar\Models\Signals;
 use starfederation\datastar\ServerSentEventGenerator;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Throwable;
@@ -52,7 +52,7 @@ class SseService
 
     public function getUrl(string $method, string $view, array $variables = []): string
     {
-        $config = new ConfigModel([
+        $config = new Config([
             'view' => $view,
             'variables' => $variables,
             'includeCsrfToken' => $method !== 'get',
@@ -72,13 +72,11 @@ class SseService
 
     /**
      * Merges HTML fragments into the DOM.
-     *
-     * @used-by FragmentNode
      */
     public function mergeFragments(string $data, array $options = []): void
     {
         $options = $this->mergeEventOptions(
-            config('datastar.defaultFragmentOptions') ?? [],
+            config('datastar.defaultFragmentOptions', []),
             $options,
         );
 
@@ -91,7 +89,7 @@ class SseService
     public function removeFragments(string $selector, array $options = []): void
     {
         $options = $this->mergeEventOptions(
-            config('datastar.defaultFragmentOptions') ?? [],
+            config('datastar.defaultFragmentOptions', []),
             $options,
         );
 
@@ -104,7 +102,7 @@ class SseService
     public function mergeSignals(array $signals, array $options = []): void
     {
         $options = $this->mergeEventOptions(
-            config('datastar.defaultSignalOptions') ?? [],
+            config('datastar.defaultSignalOptions', []),
             $options,
         );
 
@@ -121,13 +119,11 @@ class SseService
 
     /**
      * Executes JavaScript in the browser.
-     *
-     * @used-by ExecuteScriptNode
      */
     public function executeScript(string $script, array $options = []): void
     {
         $options = $this->mergeEventOptions(
-            config('datastar.defaultExecuteScriptOptions') ?? [],
+            config('datastar.defaultExecuteScriptOptions', []),
             $options,
         );
 
@@ -148,15 +144,14 @@ class SseService
      */
     public function stream(string $config, array $signals): void
     {
-        $config = ConfigModel::fromHashed($config);
+        $config = Config::fromHashed($config);
         if ($config === null) {
             $this->throwException('Submitted data was tampered.');
         }
 
-        $signals = new SignalsModel($signals);
+        $signals = new Signals($signals, $this);
         $variables = array_merge(
-            //[Datastar::getInstance()->settings->signalsVariableName => $signals],
-            ['signals' => $signals],
+            [config('datastar.signalsVariableName', 'signals') => $signals],
             $config->variables,
         );
 
@@ -168,7 +163,8 @@ class SseService
      */
     private function mergeEventOptions(array ...$optionSets): array
     {
-        $options = array_merge([], //Datastar::getInstance()->settings->defaultEventOptions;
+        $options = array_merge(
+            config('datastar.defaultEventOptions', []),
             $this->sseOptionsInProcess,
         );
 

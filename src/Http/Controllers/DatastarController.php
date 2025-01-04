@@ -13,11 +13,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DatastarController extends Controller
 {
-    protected SseService $sse;
-
-    public function __construct(SseService $sse)
-    {
-        $this->sse = $sse;
+    public function __construct(
+        protected SseService $sse,
+    ) {
     }
 
     public function index(Request $request): StreamedResponse
@@ -27,8 +25,8 @@ class DatastarController extends Controller
 
         if (strtolower($request->header('Content-Type')) === 'application/json') {
             // Clear out params to prevent them from being processed by controller actions.
-//            $request->setQueryParams([]);
-//            $request->setBodyParams([]);
+            $request->query->replace();
+            $request->request->replace();
         }
 
         // Set the response headers for the event stream.

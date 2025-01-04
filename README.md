@@ -36,6 +36,28 @@ Install manually using composer.
 composer require putyourlightson/laravel-datastar:^1.0.0-alpha.1
 ```
 
+## Usage
+
+```bladehtml
+<div data-signals-count="0">
+    <div data-text="$count"></div>
+    <button data-on-click="{{ $datastar->get('_datastar/increment) }}">
+        <span id="button-text">Increment</span>
+    </button>
+</div>
+```
+
+```bladehtml
+<!--_datastar/increment.blade.php-->
+@mergesignals(['count' => $signals->count + 1])
+
+@mergefragments
+    <span id="button-text">
+        Increment again
+    </span>
+@endmergefragments
+```
+
 ---
 
 Created by [PutYourLightsOn](https://putyourlightson.com/).

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Putyourlightson\Datastar\Http\Controllers\DatastarController;
+use Putyourlightson\Datastar\Http\Middleware\RegisterScript;
 use Putyourlightson\Datastar\Services\SseService;
 use Putyourlightson\Datastar\Variables\DatastarVariable;
 
@@ -26,7 +27,16 @@ class DatastarServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->publishes([
+            __DIR__.'/../config/datastar.php' => config_path('datastar.php'),
+        ], 'datastar-config');
+
+        $this->publishes([
+            __DIR__.'/../public' => public_path('vendor'),
+        ], 'public');
+
         $this->registerRoutes();
+        $this->registerScript();
         $this->registerVariables();
         $this->registerDirectives();
     }
@@ -38,6 +48,16 @@ class DatastarServiceProvider extends ServiceProvider
             '/datastar-controller',
             [DatastarController::class, 'index'],
         );
+    }
+
+    protected function registerScript(): void
+    {
+        if (config('datastar.registerScript', true) === false) {
+            return;
+        }
+
+        $this->app['router']->pushMiddlewareToGroup('web', RegisterScript::class);
+
     }
 
     protected function registerVariables(): void
@@ -78,7 +98,7 @@ class DatastarServiceProvider extends ServiceProvider
         });
     }
 
-    protected function getDirective(string $expression): string
+    private function getDirective(string $expression): string
     {
         return "<?php app(\Putyourlightson\Datastar\Services\SseService::class)->$expression ?>";
     }

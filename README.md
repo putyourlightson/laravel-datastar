@@ -7,8 +7,8 @@
 
 ### A view-driven, reactive hypermedia framework Laravel.
 
-> {warning}
-> **This package is in beta and its API may change.**
+> [!WARNING]
+> **This package is in alpha and its API may change.**
 
 This package integrates the [Datastar hypermedia framework](https://data-star.dev/) with [Laravel](https://laravel.com/), allowing you to create reactive front-ends driven by Blade views. It aims to replace the need for front-end frameworks such as React, Vue.js and Alpine.js + htmx, and instead lets you manage state and use logic within your Blade views.
 

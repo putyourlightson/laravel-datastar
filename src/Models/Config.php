@@ -11,22 +11,20 @@ use Illuminate\Validation\ValidationException;
 
 class Config
 {
-    protected const HASH_ALGORITHM = 'sha256';
-    protected const HASH_LENGTH = 64;
+    private const HASH_ALGORITHM = 'sha256';
+    private const HASH_LENGTH = 64;
 
     public string $view = '';
     public array $variables = [];
-    public bool $includeCsrfToken = false;
-    public ?string $csrfToken = null;
 
     /**
      * Creates a new instance from a hashed config string.
      */
     public static function fromHashed(string $config): ?self
     {
-        $hash = substr($config, 0, static::HASH_LENGTH);
-        $encoded = substr($config, static::HASH_LENGTH);
-        $checksum = static::hash($encoded);
+        $hash = substr($config, 0, self::HASH_LENGTH);
+        $encoded = substr($config, self::HASH_LENGTH);
+        $checksum = self::hash($encoded);
 
         if ($hash !== $checksum) {
             return null;
@@ -40,11 +38,11 @@ class Config
     /**
      * Hashes a string.
      */
-    protected static function hash(string $value): string
+    public static function hash(string $value): string
     {
         $key = app('encrypter')->getKey();
 
-        return hash_hmac(static::HASH_ALGORITHM, $value, $key);
+        return hash_hmac(self::HASH_ALGORITHM, $value, $key);
     }
 
     public function __construct(array $attributes = [])
@@ -59,18 +57,13 @@ class Config
      */
     public function getHashed(): string
     {
-        if ($this->includeCsrfToken) {
-            $this->csrfToken = csrf_token();
-        }
-
         $attributes = array_filter([
             'view' => $this->view,
             'variables' => $this->variables,
-            'csrfToken' => $this->csrfToken,
         ]);
         $encoded = json_encode($attributes);
 
-        $checksum = static::hash($encoded);
+        $checksum = self::hash($encoded);
 
         return $checksum . $encoded;
     }
@@ -83,13 +76,11 @@ class Config
         $validator = Validator::make([
             'view' => $this->view,
             'variables' => $this->variables,
-            'includeCsrfToken' => $this->includeCsrfToken,
         ], [
             'view' => 'required|string',
             'variables' => function(string $attribute, mixed $variables, Closure $fail) {
                 $this->validateVariables($attribute, $variables, $fail);
             },
-            'includeCsrfToken' => 'boolean',
         ]);
 
         if ($validator->fails()) {
@@ -100,7 +91,7 @@ class Config
     /**
      * Validates that none of the variables are objects, recursively.
      */
-    protected function validateVariables(string $attribute, mixed $variables, Closure $fail): void
+    private function validateVariables(string $attribute, mixed $variables, Closure $fail): void
     {
         $signalsVariableName = config('datastar.signalsVariableName');
 

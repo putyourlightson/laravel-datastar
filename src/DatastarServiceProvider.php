@@ -7,12 +7,10 @@ namespace Putyourlightson\Datastar;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Putyourlightson\Datastar\Http\Controllers\DatastarController;
 use Putyourlightson\Datastar\Http\Middleware\RegisterScript;
-use Putyourlightson\Datastar\Services\SseService;
-use Putyourlightson\Datastar\Variables\DatastarVariable;
+use Putyourlightson\Datastar\Services\Sse;
 
 class DatastarServiceProvider extends ServiceProvider
 {
@@ -20,54 +18,47 @@ class DatastarServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/datastar.php', 'datastar');
 
-        $this->app->singleton(SseService::class, function() {
-            return new SseService();
+        $this->app->singleton(Sse::class, function() {
+            return new Sse();
         });
     }
 
     public function boot(): void
     {
         $this->publishes([
-            __DIR__.'/../config/datastar.php' => config_path('datastar.php'),
+            __DIR__ . '/../config/datastar.php' => config_path('datastar.php'),
         ], 'datastar-config');
 
         $this->publishes([
-            __DIR__.'/../public' => public_path('vendor'),
+            __DIR__ . '/../public' => public_path('vendor'),
         ], 'public');
 
         $this->registerRoutes();
         $this->registerScript();
-        $this->registerVariables();
         $this->registerDirectives();
     }
 
-    protected function registerRoutes(): void
+    private function registerRoutes(): void
     {
-        Route::match(
-            ['get', 'post', 'put', 'patch', 'delete'],
+        Route::any(
             '/datastar-controller',
             [DatastarController::class, 'index'],
         );
     }
 
-    protected function registerScript(): void
+    private function registerScript(): void
     {
         if (config('datastar.registerScript', true) === false) {
             return;
         }
 
         $this->app['router']->pushMiddlewareToGroup('web', RegisterScript::class);
-
     }
 
-    protected function registerVariables(): void
-    {
-        View::composer('*', function(\Illuminate\View\View $view) {
-            $view->with('datastar', new DatastarVariable(app(SseService::class)));
-        });
-    }
-
-    protected function registerDirectives(): void
+    /**
+     * @uses Sse::setSseInProcess
+     */
+    private function registerDirectives(): void
     {
         Blade::directive('mergefragments', function(string $expression) {
             return $this->getDirective("setSseInProcess('mergeFragments', $expression); ob_start()");
@@ -100,6 +91,6 @@ class DatastarServiceProvider extends ServiceProvider
 
     private function getDirective(string $expression): string
     {
-        return "<?php app(\Putyourlightson\Datastar\Services\SseService::class)->$expression ?>";
+        return "<?php app(\Putyourlightson\Datastar\Services\Sse::class)->$expression ?>";
     }
 }

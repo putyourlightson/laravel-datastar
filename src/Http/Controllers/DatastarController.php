@@ -7,21 +7,23 @@ namespace Putyourlightson\Datastar\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Putyourlightson\Datastar\Services\SseService;
+use Putyourlightson\Datastar\Models\Config;
+use Putyourlightson\Datastar\Models\Signals;
+use Putyourlightson\Datastar\Services\Sse;
 use starfederation\datastar\ServerSentEventGenerator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class DatastarController extends Controller
 {
     public function __construct(
-        protected SseService $sse,
+        private readonly Sse $sse,
     ) {
     }
 
     public function index(Request $request): StreamedResponse
     {
         $config = $request->input('config');
-        $signals = ServerSentEventGenerator::readSignals();
 
         if (strtolower($request->header('Content-Type')) === 'application/json') {
             // Clear out params to prevent them from being processed by controller actions.
@@ -29,14 +31,23 @@ class DatastarController extends Controller
             $request->request->replace();
         }
 
-        // Set the response headers for the event stream.
-        $response = new StreamedResponse(function() use ($config, $signals) {
-            $this->sse->stream($config, $signals);
+        $config = Config::fromHashed($config);
+        if ($config === null) {
+            throw new BadRequestHttpException('Submitted data was tampered.');
+        }
+
+        $view = $config->view;
+        $signals = new Signals(ServerSentEventGenerator::readSignals());
+        $variables = array_merge(
+            [config('datastar.signalsVariableName', 'signals') => $signals],
+            $config->variables,
+        );
+
+        $response = new StreamedResponse(function() use ($view, $variables) {
+            view($view, $variables)->render();
         });
 
-        foreach (ServerSentEventGenerator::HEADERS as $name => $value) {
-            $response->headers->set($name, $value);
-        }
+        $this->sse->setResponseHeaders($response);
 
         return $response;
     }

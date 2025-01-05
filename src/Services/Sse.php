@@ -5,20 +5,16 @@
 
 namespace Putyourlightson\Datastar\Services;
 
-use Illuminate\Validation\ValidationException;
-use Putyourlightson\Datastar\Http\Controllers\DatastarController;
-use Putyourlightson\Datastar\Models\Config;
-use Putyourlightson\Datastar\Models\Signals;
 use starfederation\datastar\ServerSentEventGenerator;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Throwable;
 
-class SseService
+class Sse
 {
     /**
      * The server sent event generator.
      */
-    private ServerSentEventGenerator|null $sse = null;
+    private ServerSentEventGenerator|null $sseGenerator = null;
 
     /**
      * The server sent event method currently in process.
@@ -29,46 +25,6 @@ class SseService
      * The server sent event options currently in process.
      */
     private array|null $sseOptionsInProcess = [];
-
-    /**
-     * Returns a Datastar action.
-     */
-    public function getAction(string $method, string $view, array $variables, array $options): string
-    {
-        if (empty($view)) {
-            throw new BadRequestHttpException('A view must be provided.');
-        }
-
-        $url = $this->getUrl($method, $view, $variables);
-
-        $args = ["'$url'"];
-        if (!empty($options)) {
-            $args[] = json_encode($options);
-        }
-        $args = implode(', ', $args);
-
-        return "@$method($args)";
-    }
-
-    public function getUrl(string $method, string $view, array $variables = []): string
-    {
-        $config = new Config([
-            'view' => $view,
-            'variables' => $variables,
-            'includeCsrfToken' => $method !== 'get',
-        ]);
-
-        try {
-            $config->validate();
-        } catch (ValidationException $exception) {
-            throw new BadRequestHttpException($exception->getMessage());
-        }
-
-        return action(
-            [DatastarController::class, 'index'],
-            ['config' => $config->getHashed()],
-        );
-    }
 
     /**
      * Merges HTML fragments into the DOM.
@@ -131,31 +87,22 @@ class SseService
     }
 
     /**
+     * Sets the response headers.
+     */
+    public function setResponseHeaders(StreamedResponse $response): void
+    {
+        foreach (ServerSentEventGenerator::HEADERS as $name => $value) {
+            $response->headers->set($name, $value);
+        }
+    }
+
+    /**
      * Sets the server sent event method and options currently in process.
      */
     public function setSseInProcess(string $method, array $options = []): void
     {
         $this->sseMethodInProcess = $method;
         $this->sseOptionsInProcess = $options;
-    }
-
-    /**
-     * Streams the response and returns an empty array.
-     */
-    public function stream(string $config, array $signals): void
-    {
-        $config = Config::fromHashed($config);
-        if ($config === null) {
-            $this->throwException('Submitted data was tampered.');
-        }
-
-        $signals = new Signals($signals, $this);
-        $variables = array_merge(
-            [config('datastar.signalsVariableName', 'signals') => $signals],
-            $config->variables,
-        );
-
-        view($config->view, $variables)->render();
     }
 
     /**
@@ -180,13 +127,13 @@ class SseService
     /**
      * Returns a server sent event generator.
      */
-    private function getSse(): ServerSentEventGenerator
+    private function getSseGenerator(): ServerSentEventGenerator
     {
-        if ($this->sse === null) {
-            $this->sse = new ServerSentEventGenerator();
+        if ($this->sseGenerator === null) {
+            $this->sseGenerator = new ServerSentEventGenerator();
         }
 
-        return $this->sse;
+        return $this->sseGenerator;
     }
 
     /**
@@ -199,7 +146,8 @@ class SseService
             if (in_array($method, ['mergeSignals', 'removeSignals'])) {
                 $message .= ' Ensure that you are not setting or removing signals inside `{% fragment %}` or `{% executescript %}` tags.';
             }
-            $this->throwException($message);
+
+            throw new BadRequestHttpException($message);
         }
 
         // Clean and end all existing output buffers.
@@ -207,27 +155,11 @@ class SseService
             ob_end_clean();
         }
 
-        $this->getSse()->$method(...$args);
+        $this->getSseGenerator()->$method(...$args);
 
         $this->sseMethodInProcess = null;
 
         // Start a new output buffer to capture any subsequent inline content.
         ob_start();
-    }
-
-    /**
-     * Throws an exception with the appropriate formats for easier debugging.
-     *
-     * @phpstan-return never
-     */
-    private function throwException(Throwable|string $exception): void
-    {
-        request()->headers->set('Accept', 'text/html');
-
-        if ($exception instanceof Throwable) {
-            throw $exception;
-        }
-
-        throw new BadRequestHttpException($exception);
     }
 }

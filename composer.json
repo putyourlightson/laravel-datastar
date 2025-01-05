@@ -16,7 +16,10 @@
   "autoload": {
     "psr-4": {
       "Putyourlightson\\Datastar\\": "src/"
-    }
+    },
+    "files": [
+      "src/helpers.php"
+    ]
   },
   "extra": {
     "laravel": {

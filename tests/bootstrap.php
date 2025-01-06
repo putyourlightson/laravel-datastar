@@ -1,5 +1,5 @@
 <?php
 
-define('PROJECT_VENDOR_DIR', getenv('PROJECT_VENDOR_DIR') ?: dirname(__DIR__) . '/vendor');
+define('APP_BASE_PATH', getenv('APP_BASE_PATH') ?: dirname(__DIR__));
 
-require realpath(PROJECT_VENDOR_DIR . '/autoload.php');
+require realpath(APP_BASE_PATH . '/vendor/autoload.php');

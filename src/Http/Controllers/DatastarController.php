@@ -21,17 +21,13 @@ class DatastarController extends Controller
     ) {
     }
 
+    /**
+     * Default controller action.
+     */
     public function index(Request $request): StreamedResponse
     {
-        $config = $request->input('config');
-
-        if (strtolower($request->header('Content-Type')) === 'application/json') {
-            // Clear out params to prevent them from being processed by controller actions.
-            $request->query->replace();
-            $request->request->replace();
-        }
-
-        $config = Config::fromHashed($config);
+        $hashedConfig = $request->input('config');
+        $config = Config::fromHashed($hashedConfig);
         if ($config === null) {
             throw new BadRequestHttpException('Submitted data was tampered.');
         }
@@ -43,12 +39,26 @@ class DatastarController extends Controller
             $config->variables,
         );
 
+        if (strtolower($request->header('Content-Type')) === 'application/json') {
+            // Clear out params to prevent them from being processed by controller actions.
+            $request->query->replace();
+            $request->request->replace();
+        }
+
         $response = new StreamedResponse(function() use ($view, $variables) {
-            view($view, $variables)->render();
+            $this->stream($view, $variables);
         });
 
-        $this->sse->setResponseHeaders($response);
+        $this->sse->prepareResponse($response);
 
         return $response;
+    }
+
+    /**
+     * Streams the response.
+     */
+    protected function stream(string $view, array $variables): void
+    {
+        view($view, $variables)->render();
     }
 }

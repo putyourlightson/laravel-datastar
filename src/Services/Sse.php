@@ -87,9 +87,9 @@ class Sse
     }
 
     /**
-     * Sets the response headers.
+     * Prepares the response for server sent events.
      */
-    public function setResponseHeaders(StreamedResponse $response): void
+    public function prepareResponse(StreamedResponse $response): void
     {
         foreach (ServerSentEventGenerator::HEADERS as $name => $value) {
             $response->headers->set($name, $value);

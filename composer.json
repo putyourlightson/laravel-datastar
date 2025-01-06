@@ -36,6 +36,9 @@
     "test": "vendor/bin/pest"
   },
   "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
     "optimize-autoloader": true,
     "sort-packages": true
   },

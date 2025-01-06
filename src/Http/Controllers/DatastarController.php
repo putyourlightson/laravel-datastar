@@ -59,6 +59,6 @@ class DatastarController extends Controller
      */
     protected function stream(string $view, array $variables): void
     {
-        view($view, $variables)->render();
+        $this->sse->renderView($view, $variables);
     }
 }

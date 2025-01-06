@@ -5,9 +5,11 @@
 
 namespace Putyourlightson\Datastar\Services;
 
+use Illuminate\Support\Facades\View;
 use starfederation\datastar\ServerSentEventGenerator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Throwable;
 
 class Sse
 {
@@ -36,7 +38,7 @@ class Sse
             $options,
         );
 
-        $this->callSse('mergeFragments', $data, $options);
+        $this->sendSseEvent('mergeFragments', $data, $options);
     }
 
     /**
@@ -49,7 +51,7 @@ class Sse
             $options,
         );
 
-        $this->callSse('removeFragments', $selector, $options);
+        $this->sendSseEvent('removeFragments', $selector, $options);
     }
 
     /**
@@ -62,7 +64,7 @@ class Sse
             $options,
         );
 
-        $this->callSse('mergeSignals', $signals, $options);
+        $this->sendSseEvent('mergeSignals', $signals, $options);
     }
 
     /**
@@ -70,7 +72,7 @@ class Sse
      */
     public function removeSignals(array $paths, array $options = []): void
     {
-        $this->callSse('removeSignals', $paths, $options);
+        $this->sendSseEvent('removeSignals', $paths, $options);
     }
 
     /**
@@ -83,7 +85,7 @@ class Sse
             $options,
         );
 
-        $this->callSse('executeScript', $script, $options);
+        $this->sendSseEvent('executeScript', $script, $options);
     }
 
     /**
@@ -103,6 +105,22 @@ class Sse
     {
         $this->sseMethodInProcess = $method;
         $this->sseOptionsInProcess = $options;
+    }
+
+    /**
+     * Renders a view, catching exceptions.
+     */
+    public function renderView(string $view, array $variables): void
+    {
+        if (!View::exists($view)) {
+            $this->throwException('View `' . $view . '` does not exist.');
+        }
+
+        try {
+            view($view, $variables)->render();
+        } catch (Throwable $exception) {
+            $this->throwException($exception);
+        }
     }
 
     /**
@@ -137,9 +155,9 @@ class Sse
     }
 
     /**
-     * Calls an SSE method with arguments and cleans output buffers.
+     * Sends an SSE event with arguments and cleans output buffers.
      */
-    private function callSse(string $method, ...$args): void
+    private function sendSseEvent(string $method, ...$args): void
     {
         if ($this->sseMethodInProcess && $this->sseMethodInProcess !== $method) {
             $message = 'The SSE method `' . $method . '` cannot be called when `' . $this->sseMethodInProcess . '` is already in process.';
@@ -147,7 +165,7 @@ class Sse
                 $message .= ' Ensure that you are not setting or removing signals inside `{% fragment %}` or `{% executescript %}` tags.';
             }
 
-            throw new BadRequestHttpException($message);
+            $this->throwException($message);
         }
 
         // Clean and end all existing output buffers.
@@ -161,5 +179,21 @@ class Sse
 
         // Start a new output buffer to capture any subsequent inline content.
         ob_start();
+    }
+
+    /**
+     * Throws an exception with the appropriate formats for easier debugging.
+     *
+     * @phpstan-return never
+     */
+    private function throwException(Throwable|string $exception): void
+    {
+        request()->headers->set('Accept', 'text/html');
+
+        if ($exception instanceof Throwable) {
+            throw $exception;
+        }
+
+        throw new BadRequestHttpException($exception);
     }
 }

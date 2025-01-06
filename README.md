@@ -58,6 +58,96 @@ composer require putyourlightson/laravel-datastar:^1.0.0-alpha.1
 @endmergefragments
 ```
 
+### Datastar Helper
+
+The `datastar()` helper function is available in Blade views and returns a `Datastar` instance.
+
+#### `datastar()->get()`
+
+Returns a `@get()` action request to render a view at the given path.
+
+```bladehtml
+{{ datastar()->get('_datastar/increment') }}
+```
+
+#### `datastar()->post()`
+
+Works the same as [`datastar()->get()`](#datastar->get) but returns a `@post()` action request to render a view at the given path. A CSRF token is automatically generated and sent along with the request.
+
+```bladehtml
+{{ datastar()->post('_datastar/increment') }}
+```
+
+#### `datastar()->put()`
+
+Works the same as [`datastar()->post()`](#datastar->post) but returns a `@put()` action request.
+
+```bladehtml
+{{ datastar()->put('_datastar/increment') }}
+```
+
+#### `datastar()->patch()`
+
+Works the same as [`datastar()->post()`](#datastar->post) but returns a `@patch()` action request.
+
+```bladehtml
+{{ datastar()->patch('_datastar/increment') }}
+```
+
+#### `datastar()->delete()`
+
+Works the same as [`datastar()->post()`](#datastar->post) but returns a `@delete()` action request.
+
+```bladehtml
+{{ datastar()->delete('_datastar/increment') }}
+```
+
+### Blade Directives
+
+#### `@mergefragments`
+
+Merges one or more fragments into the DOM.
+
+```bladehtml
+@mergefragments
+    <div id="new-fragment">New fragment</div>
+@endmergefragments
+```
+
+#### `@removefragments`
+
+Removes one or more HTML fragments that match the provided selector from the DOM.
+
+```bladehtml
+@removefragments('#old-fragment')
+```
+
+#### `@mergesignals`
+
+Updates the signals with new values.
+
+```bladehtml
+@mergesignals(['foo' => 1, 'bar' => 2])
+```
+
+#### `@removesignals`
+
+Removes signals that match one or more provided paths.
+
+```bladehtml
+@removesignals(['foo', 'bar'])
+```
+
+#### `@executescript`
+
+Executes JavaScript in the browser.
+
+```bladehtml
+@executescript
+    alert('Hello, world!');
+@endexecutescript
+```
+
 ---
 
 Created by [PutYourLightsOn](https://putyourlightson.com/).

@@ -6,6 +6,7 @@
 namespace Putyourlightson\Datastar\Services;
 
 use Illuminate\Support\Facades\View;
+use Putyourlightson\Datastar\Models\Signals;
 use starfederation\datastar\ServerSentEventGenerator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -27,6 +28,40 @@ class Sse
      * The server sent event options currently in process.
      */
     private array|null $sseOptionsInProcess = [];
+
+    /**
+     * Returns a signals model populated with signals passed into the request.
+     */
+    public function getSignals(): Signals
+    {
+        return new Signals(ServerSentEventGenerator::readSignals());
+    }
+
+    /**
+     * Prepares the response for server sent events.
+     */
+    public function prepareResponse(StreamedResponse $response): void
+    {
+        foreach (ServerSentEventGenerator::HEADERS as $name => $value) {
+            $response->headers->set($name, $value);
+        }
+    }
+
+    /**
+     * Renders a view, catching exceptions.
+     */
+    public function renderView(string $view, array $variables): void
+    {
+        if (!View::exists($view)) {
+            $this->throwException('View `' . $view . '` does not exist.');
+        }
+
+        try {
+            view($view, $variables)->render();
+        } catch (Throwable $exception) {
+            $this->throwException($exception);
+        }
+    }
 
     /**
      * Merges HTML fragments into the DOM.
@@ -89,38 +124,12 @@ class Sse
     }
 
     /**
-     * Prepares the response for server sent events.
-     */
-    public function prepareResponse(StreamedResponse $response): void
-    {
-        foreach (ServerSentEventGenerator::HEADERS as $name => $value) {
-            $response->headers->set($name, $value);
-        }
-    }
-
-    /**
      * Sets the server sent event method and options currently in process.
      */
     public function setSseInProcess(string $method, array $options = []): void
     {
         $this->sseMethodInProcess = $method;
         $this->sseOptionsInProcess = $options;
-    }
-
-    /**
-     * Renders a view, catching exceptions.
-     */
-    public function renderView(string $view, array $variables): void
-    {
-        if (!View::exists($view)) {
-            $this->throwException('View `' . $view . '` does not exist.');
-        }
-
-        try {
-            view($view, $variables)->render();
-        } catch (Throwable $exception) {
-            $this->throwException($exception);
-        }
     }
 
     /**

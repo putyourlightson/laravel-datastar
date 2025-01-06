@@ -5,7 +5,7 @@
 
 # Datastar Package for Laravel
 
-### A view-driven, reactive hypermedia framework Laravel.
+### A view-driven, reactive hypermedia framework for Laravel.
 
 > [!WARNING]
 > **This package is in alpha and its API may change.**
@@ -38,17 +38,18 @@ composer require putyourlightson/laravel-datastar:^1.0.0-alpha.1
 
 ## Usage
 
-```bladehtml
+```html
 <div data-signals-count="0">
     <div data-text="$count"></div>
-    <button data-on-click="{{ datastar()->get('_datastar/increment) }}">
+    <button data-on-click="{{ datastar()->get('_datastar/increment') }}">
         <span id="button-text">Increment</span>
     </button>
 </div>
 ```
 
-```bladehtml
+```html
 <!--_datastar/increment.blade.php-->
+
 @mergesignals(['count' => $signals->count + 1])
 
 @mergefragments
@@ -60,45 +61,45 @@ composer require putyourlightson/laravel-datastar:^1.0.0-alpha.1
 
 ### Datastar Helper
 
-The `datastar()` helper function is available in Blade views and returns a `Datastar` instance.
+The `datastar()` helper function is available in Blade views and returns a `Datastar` helper that can be used to generate action requests to the Datastar controller.
 
 #### `datastar()->get()`
 
 Returns a `@get()` action request to render a view at the given path.
 
-```bladehtml
+```html
 {{ datastar()->get('_datastar/increment') }}
 ```
 
 #### `datastar()->post()`
 
-Works the same as [`datastar()->get()`](#datastar->get) but returns a `@post()` action request to render a view at the given path. A CSRF token is automatically generated and sent along with the request.
+Works the same as [`datastar()->get()`](#datastar-get) but returns a `@post()` action request to render a view at the given path. A CSRF token is automatically generated and sent along with the request.
 
-```bladehtml
+```html
 {{ datastar()->post('_datastar/increment') }}
 ```
 
 #### `datastar()->put()`
 
-Works the same as [`datastar()->post()`](#datastar->post) but returns a `@put()` action request.
+Works the same as [`datastar()->post()`](#datastar-post) but returns a `@put()` action request.
 
-```bladehtml
+```html
 {{ datastar()->put('_datastar/increment') }}
 ```
 
 #### `datastar()->patch()`
 
-Works the same as [`datastar()->post()`](#datastar->post) but returns a `@patch()` action request.
+Works the same as [`datastar()->post()`](#datastar-post) but returns a `@patch()` action request.
 
-```bladehtml
+```html
 {{ datastar()->patch('_datastar/increment') }}
 ```
 
 #### `datastar()->delete()`
 
-Works the same as [`datastar()->post()`](#datastar->post) but returns a `@delete()` action request.
+Works the same as [`datastar()->post()`](#datastar-post) but returns a `@delete()` action request.
 
-```bladehtml
+```html
 {{ datastar()->delete('_datastar/increment') }}
 ```
 
@@ -108,7 +109,7 @@ Works the same as [`datastar()->post()`](#datastar->post) but returns a `@delete
 
 Merges one or more fragments into the DOM.
 
-```bladehtml
+```html
 @mergefragments
     <div id="new-fragment">New fragment</div>
 @endmergefragments
@@ -118,7 +119,7 @@ Merges one or more fragments into the DOM.
 
 Removes one or more HTML fragments that match the provided selector from the DOM.
 
-```bladehtml
+```html
 @removefragments('#old-fragment')
 ```
 
@@ -126,7 +127,7 @@ Removes one or more HTML fragments that match the provided selector from the DOM
 
 Updates the signals with new values.
 
-```bladehtml
+```html
 @mergesignals(['foo' => 1, 'bar' => 2])
 ```
 
@@ -134,7 +135,7 @@ Updates the signals with new values.
 
 Removes signals that match one or more provided paths.
 
-```bladehtml
+```html
 @removesignals(['foo', 'bar'])
 ```
 
@@ -142,10 +143,42 @@ Removes signals that match one or more provided paths.
 
 Executes JavaScript in the browser.
 
-```bladehtml
+```html
 @executescript
     alert('Hello, world!');
 @endexecutescript
+```
+
+## Custom Controllers
+
+If you prefer to send SSE events using a custom controller instead of a Blade view, you can do so by extending the `DatastarController` class and overriding the `stream` method.
+
+```php
+// routes/web.php
+
+use App\Http\Controllers\CustomController;
+
+Route::resource('/custom-controller', CustomController::class);
+```
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Putyourlightson\Datastar\Http\Controllers\DatastarController;
+
+class CustomController extends DatastarController
+{
+    protected function stream(): void
+    {
+        $signals = $this->sse->getSignals();
+        $this->sse->mergeSignals(['count' => $signals->count + 1]);
+        $this->sse->mergeFragments('
+            <span id="button-text">Increment again</span>
+        ');
+    }
+}
 ```
 
 ---

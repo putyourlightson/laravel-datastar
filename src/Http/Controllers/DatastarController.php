@@ -5,48 +5,26 @@
 
 namespace Putyourlightson\Datastar\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Putyourlightson\Datastar\Models\Config;
-use Putyourlightson\Datastar\Models\Signals;
 use Putyourlightson\Datastar\Services\Sse;
-use starfederation\datastar\ServerSentEventGenerator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class DatastarController extends Controller
 {
     public function __construct(
-        private readonly Sse $sse,
+        protected readonly Sse $sse,
     ) {
     }
 
     /**
      * Default controller action.
      */
-    public function index(Request $request): StreamedResponse
+    public function index(): StreamedResponse
     {
-        $hashedConfig = $request->input('config');
-        $config = Config::fromHashed($hashedConfig);
-        if ($config === null) {
-            throw new BadRequestHttpException('Submitted data was tampered.');
-        }
-
-        $view = $config->view;
-        $signals = new Signals(ServerSentEventGenerator::readSignals());
-        $variables = array_merge(
-            [config('datastar.signalsVariableName', 'signals') => $signals],
-            $config->variables,
-        );
-
-        if (strtolower($request->header('Content-Type')) === 'application/json') {
-            // Clear out params to prevent them from being processed by controller actions.
-            $request->query->replace();
-            $request->request->replace();
-        }
-
-        $response = new StreamedResponse(function() use ($view, $variables) {
-            $this->stream($view, $variables);
+        $response = new StreamedResponse(function() {
+            $this->stream();
         });
 
         $this->sse->prepareResponse($response);
@@ -57,8 +35,27 @@ class DatastarController extends Controller
     /**
      * Streams the response.
      */
-    protected function stream(string $view, array $variables): void
+    protected function stream(): void
     {
+        $hashedConfig = request()->input('config');
+        $config = Config::fromHashed($hashedConfig);
+        if ($config === null) {
+            throw new BadRequestHttpException('Submitted data was tampered.');
+        }
+
+        $view = $config->view;
+        $signals = $this->sse->getSignals();
+        $variables = array_merge(
+            [config('datastar.signalsVariableName', 'signals') => $signals],
+            $config->variables,
+        );
+
+        if (strtolower(request()->header('Content-Type')) === 'application/json') {
+            // Clear out params to prevent them from being processed by controller actions.
+            request()->query->replace();
+            request()->request->replace();
+        }
+
         $this->sse->renderView($view, $variables);
     }
 }

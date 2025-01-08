@@ -42,7 +42,7 @@ class Sse
      */
     public function prepareResponse(StreamedResponse $response): void
     {
-        foreach (ServerSentEventGenerator::HEADERS as $name => $value) {
+        foreach (ServerSentEventGenerator::headers() as $name => $value) {
             $response->headers->set($name, $value);
         }
     }

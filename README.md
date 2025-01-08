@@ -48,7 +48,7 @@ composer require putyourlightson/laravel-datastar:^1.0.0-alpha.1
 ```
 
 ```html
-<!--_datastar/increment.blade.php-->
+{{-- _datastar/increment.blade.php --}}
 
 @mergesignals(['count' => $signals->count + 1])
 

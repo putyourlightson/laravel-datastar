@@ -151,7 +151,7 @@ Executes JavaScript in the browser.
 
 ## Custom Controllers
 
-If you prefer to send SSE events using a custom controller instead of a Blade view, you can do so by extending the `DatastarController` class and overriding the `stream` method.
+You can send SSE events using a custom controller instead of a Blade view using the `DatastarEventStream` trait. Pass a callable into the `getStreamedResponse()` method and return the response.
 
 ```php
 // routes/web.php
@@ -166,17 +166,23 @@ Route::resource('/custom-controller', CustomController::class);
 
 namespace App\Http\Controllers;
 
-use Putyourlightson\Datastar\Http\Controllers\DatastarController;
+use Illuminate\Routing\Controller;
+use Putyourlightson\Datastar\DatastarEventStream;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class CustomController extends DatastarController
+class CustomController extends Controller
 {
-    protected function stream(): void
+    use DatastarEventStream;
+
+    public function index(): StreamedResponse
     {
-        $signals = $this->sse->getSignals();
-        $this->sse->mergeSignals(['count' => $signals->count + 1]);
-        $this->sse->mergeFragments('
-            <span id="button-text">Increment again</span>
-        ');
+        return $this->getStreamedResponse(function() {
+            $signals = $this->getSignals();
+            $this->mergeSignals(['count' => $signals->count + 1]);
+            $this->mergeFragments('
+                <span id="button-text">Increment again</span>
+            ');
+        });
     }
 }
 ```

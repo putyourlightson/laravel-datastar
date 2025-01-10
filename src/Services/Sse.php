@@ -5,10 +5,7 @@
 
 namespace Putyourlightson\Datastar\Services;
 
-use Illuminate\Support\Facades\View;
-use Putyourlightson\Datastar\Models\Signals;
 use starfederation\datastar\ServerSentEventGenerator;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Throwable;
 
@@ -28,40 +25,6 @@ class Sse
      * The server sent event options currently in process.
      */
     private array|null $sseOptionsInProcess = [];
-
-    /**
-     * Returns a signals model populated with signals passed into the request.
-     */
-    public function getSignals(): Signals
-    {
-        return new Signals(ServerSentEventGenerator::readSignals());
-    }
-
-    /**
-     * Prepares the response for server sent events.
-     */
-    public function prepareResponse(StreamedResponse $response): void
-    {
-        foreach (ServerSentEventGenerator::headers() as $name => $value) {
-            $response->headers->set($name, $value);
-        }
-    }
-
-    /**
-     * Renders a view, catching exceptions.
-     */
-    public function renderView(string $view, array $variables): void
-    {
-        if (!View::exists($view)) {
-            $this->throwException('View `' . $view . '` does not exist.');
-        }
-
-        try {
-            view($view, $variables)->render();
-        } catch (Throwable $exception) {
-            $this->throwException($exception);
-        }
-    }
 
     /**
      * Merges HTML fragments into the DOM.
@@ -133,6 +96,22 @@ class Sse
     }
 
     /**
+     * Throws an exception with the appropriate formats for easier debugging.
+     *
+     * @phpstan-return never
+     */
+    public function throwException(Throwable|string $exception): void
+    {
+        request()->headers->set('Accept', 'text/html');
+
+        if ($exception instanceof Throwable) {
+            throw $exception;
+        }
+
+        throw new BadRequestHttpException($exception);
+    }
+
+    /**
      * Returns merged event options with null values removed.
      */
     private function mergeEventOptions(array ...$optionSets): array
@@ -188,21 +167,5 @@ class Sse
 
         // Start a new output buffer to capture any subsequent inline content.
         ob_start();
-    }
-
-    /**
-     * Throws an exception with the appropriate formats for easier debugging.
-     *
-     * @phpstan-return never
-     */
-    private function throwException(Throwable|string $exception): void
-    {
-        request()->headers->set('Accept', 'text/html');
-
-        if ($exception instanceof Throwable) {
-            throw $exception;
-        }
-
-        throw new BadRequestHttpException($exception);
     }
 }

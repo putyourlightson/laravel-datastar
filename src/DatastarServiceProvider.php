@@ -58,6 +58,11 @@ class DatastarServiceProvider extends ServiceProvider
     }
 
     /**
+     * @uses Sse::mergeFragments()
+     * @uses Sse::removeFragments()
+     * @uses Sse::mergeSignals()
+     * @uses Sse::removeSignals()
+     * @uses Sse::executeScript()
      * @uses Sse::setSseInProcess
      */
     private function registerDirectives(): void

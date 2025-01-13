@@ -209,7 +209,7 @@ class MyController extends Controller
 
 ### DatastarEventStream Trait
 
-#### mergeFragments()
+#### `mergeFragments()`
 
 Merges one or more fragments into the DOM.
 
@@ -217,7 +217,7 @@ Merges one or more fragments into the DOM.
 $this->mergeFragments('<div id="new-fragment">New fragment</div>');
 ```
 
-#### removeFragments()
+#### `removeFragments()`
 
 Removes one or more HTML fragments that match the provided selector from the DOM.
 
@@ -225,7 +225,7 @@ Removes one or more HTML fragments that match the provided selector from the DOM
 $this->removeFragments('#old-fragment');
 ```
 
-#### mergeSignals()
+#### `mergeSignals()`
 
 Updates the signals with new values.
 
@@ -233,7 +233,7 @@ Updates the signals with new values.
 $this->mergeSignals(['foo' => 1, 'bar' => 2]);
 ```
 
-#### removeSignals()
+#### `removeSignals()`
 
 Removes signals that match one or more provided paths.
 
@@ -241,7 +241,7 @@ Removes signals that match one or more provided paths.
 $this->removeSignals(['foo', 'bar']);
 ```
 
-#### executeScript()
+#### `executeScript()`
 
 Executes JavaScript in the browser.
 

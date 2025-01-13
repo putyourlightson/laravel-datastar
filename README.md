@@ -67,7 +67,7 @@ Here’s a trivial example that toggles some backend state using the Blade view 
 
 Start by reading the [Getting Started](https://data-star.dev/guide/getting_started) guide to learn how to use Datastar on the frontend. The Datastar package for Laravel only handles backend requests.
 
-> {note}
+> [!NOTE]
 > The Datastar [VSCode extension](https://marketplace.visualstudio.com/items?itemName=starfederation.datastar-vscode) and [IntelliJ plugin](https://plugins.jetbrains.com/plugin/26072-datastar-support) have autocomplete for all `data-*` attributes.
 
 When working with signals, note that you can convert a PHP array into a JSON object using the `json_encode` function.

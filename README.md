@@ -54,11 +54,17 @@ Here’s a trivial example that toggles some backend state using the Blade view 
 ```php
 {{-- _datastar/toggle.blade.php --}}
 
-@mergesignals(['enabled' => $signals->enabled ? false : true])
+@php
+    $enabled = $signals->enabled;
+    // Do something with the state and toggle the enabled state.
+    $enabled = !$enabled;
+@endphp
+
+@mergesignals(['enabled' => $enabled])
 
 @mergefragments
     <span id="button-text">
-        {{ $signals->enabled ? 'Enable' : 'Disable' }}
+        {{ $enabled ? 'Disable' : 'Enable' }}
     </span>
 @endmergefragments
 ```
@@ -76,12 +82,13 @@ When working with signals, note that you can convert a PHP array into a JSON obj
 @php
     $signals = ['foo' => 1, 'bar' => 2];
 @endphp
+
 <div data-signals="{{ json_encode($signals) }}"></div>
 ```
 
 ### Datastar Helper
 
-The `datastar()` helper function is available in Blade views and returns a `Datastar` helper that can be used to generate action requests to the Datastar controller. The Datastar controller renders a view containing one or [Blade directives](#blade-directives) that each send an SSE event.
+The `datastar()` helper function is available in Blade views and returns a `Datastar` helper that can be used to generate action requests to the Datastar controller. The Datastar controller renders a view containing one or [Blade directives](#blade-directives) that each send an SSE event. [Signals](#signals) are also sent as part of the request, and are made available in Datastar views using the `$signals` variable.
 
 #### `datastar()->get()`
 
@@ -248,6 +255,32 @@ Executes JavaScript in the browser.
 ```php
 $this->executeScript('alert("Hello, world!")');
 ```
+
+### Signals
+
+When working with signals, either in views rendered by the Datastar controller or by calling `$this->getSignals()`, you are working with a [Signals model](https://github.com/putyourlightson/laravel-datastar/blob/develop/src/Models/Signals.php), which provides a simple way to manage signals.
+
+```php
+@php
+    // Getting signal values.
+    $username = $signals->username;
+    $username = $signals->get('username');
+    $username = $signals->get('user.username');
+    
+    // Setting signal values.
+    $username = $signals->username('bobby');
+    $username = $signals->set('username', 'bobby');
+    $username = $signals->set('user.username', 'bobby');
+    $username = $signals->setValues(['user.username' => 'bobby', 'success' => true]);
+    
+    // Removing signal values.
+    $username = $signals->remove('username');
+    $username = $signals->remove('user.username');
+@endphp
+```
+
+> [!NOTE]
+> Signals updates _cannot_ be wrapped in `{% mergefragment %}` tags, since each update creates a server-sent event which will conflict with the fragment’s contents.
 
 ---
 

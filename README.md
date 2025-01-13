@@ -5,7 +5,7 @@
 
 # Datastar Package for Laravel
 
-### A view-driven, reactive hypermedia framework for Laravel.
+### A reactive hypermedia framework for Laravel.
 
 > [!WARNING]
 > **This package is in beta and its API may change.**
@@ -171,14 +171,14 @@ Executes JavaScript in the browser.
 
 ### Using Controllers
 
-You can send SSE events using a custom controller instead of a Blade view using the `DatastarEventStream` trait. Pass a callable into the `getStreamedResponse()` method and return the response.
+You can send SSE events using your own controller instead of a Blade view using the `DatastarEventStream` trait. Return the `getStreamedResponse()` method, passing a callable into it that sends zero or more SSE events using methods provided.
 
 ```php
 // routes/web.php
 
-use App\Http\Controllers\CustomController;
+use App\Http\Controllers\MyController;
 
-Route::resource('/custom-controller', CustomController::class);
+Route::resource('/my-controller', MyController::class);
 ```
 
 ```php
@@ -190,7 +190,7 @@ use Illuminate\Routing\Controller;
 use Putyourlightson\Datastar\DatastarEventStream;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class CustomController extends Controller
+class MyController extends Controller
 {
     use DatastarEventStream;
 
@@ -198,13 +198,55 @@ class CustomController extends Controller
     {
         return $this->getStreamedResponse(function() {
             $signals = $this->getSignals();
-            $this->mergeSignals(['count' => $signals->count + 1]);
+            $this->mergeSignals(['enabled' => $signals->enabled ? false : true]);
             $this->mergeFragments('
-                <span id="button-text">Increment again</span>
+                <span id="button-text">' . ($signals->enabled ? 'Enable' : 'Disable') . '</span>
             ');
         });
     }
 }
+```
+
+### DatastarEventStream Trait
+
+#### mergeFragments()
+
+Merges one or more fragments into the DOM.
+
+```php
+$this->mergeFragments('<div id="new-fragment">New fragment</div>');
+```
+
+#### removeFragments()
+
+Removes one or more HTML fragments that match the provided selector from the DOM.
+
+```php
+$this->removeFragments('#old-fragment');
+```
+
+#### mergeSignals()
+
+Updates the signals with new values.
+
+```php
+$this->mergeSignals(['foo' => 1, 'bar' => 2]);
+```
+
+#### removeSignals()
+
+Removes signals that match one or more provided paths.
+
+```php
+$this->removeSignals(['foo', 'bar']);
+```
+
+#### executeScript()
+
+Executes JavaScript in the browser.
+
+```php
+$this->executeScript('alert("Hello, world!")');
 ```
 
 ---

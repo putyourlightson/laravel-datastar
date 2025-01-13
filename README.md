@@ -8,9 +8,9 @@
 ### A view-driven, reactive hypermedia framework for Laravel.
 
 > [!WARNING]
-> **This package is in alpha and its API may change.**
+> **This package is in beta and its API may change.**
 
-This package integrates the [Datastar hypermedia framework](https://data-star.dev/) with [Laravel](https://laravel.com/), allowing you to create reactive frontends driven by Blade views or custom controllers. It aims to replace the need for front-end frameworks such as React, Vue.js and Alpine.js + htmx, and instead lets you manage state and use logic within your Blade views.
+This package integrates the [Datastar hypermedia framework](https://data-star.dev/) with [Laravel](https://laravel.com/), allowing you to create reactive frontends driven by Blade views _or_ controllers. It aims to replace the need for front-end frameworks such as React, Vue.js and Alpine.js + htmx, and instead lets you manage state and use logic within your Blade views.
 
 Use-cases:
 
@@ -33,42 +33,62 @@ This package requires [Laravel](https://laravel.com/) 11.0.0 or later.
 Install manually using composer.
 
 ```shell
-composer require putyourlightson/laravel-datastar:^1.0.0-alpha.1
+composer require putyourlightson/laravel-datastar:^1.0.0-beta.1
 ```
 
-## Usage
+## Overview
+
+The Datastar package for Laravel allows you to handle backend requests by sending SSE events using [Blade directives](#blade-directives) in views _or_ [using controllers](#using-controllers). The former requires less setup and is more straightforward, while the latter provides more flexibility.
+
+Here’s a trivial example that toggles some backend state using the Blade view `_datastar/toggle.blade.php` to handle the request.
 
 ```html
-<div data-signals-count="0">
-    <div data-text="$count"></div>
-    <button data-on-click="{{ datastar()->get('_datastar/increment') }}">
-        <span id="button-text">Increment</span>
+<div data-signals-enabled="false">
+    <div data-text="$enabled ? 'ON' : 'OFF'"></div>
+    <button data-on-click="{{ datastar()->get('_datastar/toggle') }}">
+        <span id="button-text">Enable</span>
     </button>
 </div>
 ```
 
 ```html
-{{-- _datastar/increment.blade.php --}}
+{{-- _datastar/toggle.blade.php --}}
 
-@mergesignals(['count' => $signals->count + 1])
+@mergesignals(['enabled' => $signals->enabled ? false : true])
 
 @mergefragments
     <span id="button-text">
-        Increment again
+        {{ $signals->enabled ? 'Enable' : 'Disable' }}
     </span>
 @endmergefragments
 ```
 
+## Usage
+
+Start by reading the [Getting Started](https://data-star.dev/guide/getting_started) guide to learn how to use Datastar on the frontend. The Datastar package for Laravel only handles backend requests.
+
+> {note}
+> The Datastar [VSCode extension](https://marketplace.visualstudio.com/items?itemName=starfederation.datastar-vscode) and [IntelliJ plugin](https://plugins.jetbrains.com/plugin/26072-datastar-support) have autocomplete for all `data-*` attributes.
+
+When working with signals, note that you can convert a PHP array into a JSON object using the `json_encode` function.
+
+```twig
+@php
+    $signals = ['foo' => 1, 'bar' => 2];
+@endphp
+<div data-signals="{{ json_encode($signals) }}"></div>
+```
+
 ### Datastar Helper
 
-The `datastar()` helper function is available in Blade views and returns a `Datastar` helper that can be used to generate action requests to the Datastar controller.
+The `datastar()` helper function is available in Blade views and returns a `Datastar` helper that can be used to generate action requests to the Datastar controller. The Datastar controller renders a view containing one or [Blade directives](#blade-directives) that each send an SSE event.
 
 #### `datastar()->get()`
 
 Returns a `@get()` action request to render a view at the given path.
 
 ```html
-{{ datastar()->get('_datastar/increment') }}
+{{ datastar()->get('path/to/view') }}
 ```
 
 #### `datastar()->post()`
@@ -76,7 +96,7 @@ Returns a `@get()` action request to render a view at the given path.
 Works the same as [`datastar()->get()`](#datastar-get) but returns a `@post()` action request to render a view at the given path. A CSRF token is automatically generated and sent along with the request.
 
 ```html
-{{ datastar()->post('_datastar/increment') }}
+{{ datastar()->post('path/to/view') }}
 ```
 
 #### `datastar()->put()`
@@ -84,7 +104,7 @@ Works the same as [`datastar()->get()`](#datastar-get) but returns a `@post()` a
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@put()` action request.
 
 ```html
-{{ datastar()->put('_datastar/increment') }}
+{{ datastar()->put('path/to/view') }}
 ```
 
 #### `datastar()->patch()`
@@ -92,7 +112,7 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@put()` 
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@patch()` action request.
 
 ```html
-{{ datastar()->patch('_datastar/increment') }}
+{{ datastar()->patch('path/to/view') }}
 ```
 
 #### `datastar()->delete()`
@@ -100,7 +120,7 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@patch()
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@delete()` action request.
 
 ```html
-{{ datastar()->delete('_datastar/increment') }}
+{{ datastar()->delete('path/to/view') }}
 ```
 
 ### Blade Directives
@@ -149,7 +169,7 @@ Executes JavaScript in the browser.
 @endexecutescript
 ```
 
-## Custom Controllers
+### Using Controllers
 
 You can send SSE events using a custom controller instead of a Blade view using the `DatastarEventStream` trait. Pass a callable into the `getStreamedResponse()` method and return the response.
 

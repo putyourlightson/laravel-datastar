@@ -51,7 +51,7 @@ Here’s a trivial example that toggles some backend state using the Blade view 
 </div>
 ```
 
-```html
+```php
 {{-- _datastar/toggle.blade.php --}}
 
 @mergesignals(['enabled' => $signals->enabled ? false : true])
@@ -72,7 +72,7 @@ Start by reading the [Getting Started](https://data-star.dev/guide/getting_start
 
 When working with signals, note that you can convert a PHP array into a JSON object using the `json_encode` function.
 
-```twig
+```php
 @php
     $signals = ['foo' => 1, 'bar' => 2];
 @endphp
@@ -87,7 +87,7 @@ The `datastar()` helper function is available in Blade views and returns a `Data
 
 Returns a `@get()` action request to render a view at the given path.
 
-```html
+```php
 {{ datastar()->get('path/to/view') }}
 ```
 
@@ -95,7 +95,7 @@ Returns a `@get()` action request to render a view at the given path.
 
 Works the same as [`datastar()->get()`](#datastar-get) but returns a `@post()` action request to render a view at the given path. A CSRF token is automatically generated and sent along with the request.
 
-```html
+```php
 {{ datastar()->post('path/to/view') }}
 ```
 
@@ -103,7 +103,7 @@ Works the same as [`datastar()->get()`](#datastar-get) but returns a `@post()` a
 
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@put()` action request.
 
-```html
+```php
 {{ datastar()->put('path/to/view') }}
 ```
 
@@ -111,7 +111,7 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@put()` 
 
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@patch()` action request.
 
-```html
+```php
 {{ datastar()->patch('path/to/view') }}
 ```
 
@@ -119,7 +119,7 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@patch()
 
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@delete()` action request.
 
-```html
+```php
 {{ datastar()->delete('path/to/view') }}
 ```
 
@@ -129,7 +129,7 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@delete(
 
 Merges one or more fragments into the DOM.
 
-```html
+```php
 @mergefragments
     <div id="new-fragment">New fragment</div>
 @endmergefragments
@@ -139,7 +139,7 @@ Merges one or more fragments into the DOM.
 
 Removes one or more HTML fragments that match the provided selector from the DOM.
 
-```html
+```php
 @removefragments('#old-fragment')
 ```
 
@@ -147,7 +147,7 @@ Removes one or more HTML fragments that match the provided selector from the DOM
 
 Updates the signals with new values.
 
-```html
+```php
 @mergesignals(['foo' => 1, 'bar' => 2])
 ```
 
@@ -155,7 +155,7 @@ Updates the signals with new values.
 
 Removes signals that match one or more provided paths.
 
-```html
+```php
 @removesignals(['foo', 'bar'])
 ```
 
@@ -163,7 +163,7 @@ Removes signals that match one or more provided paths.
 
 Executes JavaScript in the browser.
 
-```html
+```php
 @executescript
     alert('Hello, world!');
 @endexecutescript

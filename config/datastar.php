@@ -18,7 +18,7 @@ return [
      * The event options to override the Datastar defaults. Null values will be ignored.
      */
     'defaultEventOptions' => [
-        'retryDuration' => 123,
+        'retryDuration' => 1000,
     ],
 
     /**

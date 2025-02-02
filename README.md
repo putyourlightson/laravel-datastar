@@ -30,10 +30,12 @@ This package requires [Laravel](https://laravel.com/) 11.0.0 or later.
 
 ## Installation
 
-Install manually using composer.
+Install manually using composer, then run the `artisan vendor:publish --tag=public` command to publish the public assets.
 
 ```shell
 composer require putyourlightson/laravel-datastar:^1.0.0-beta.1
+
+php artisan vendor:publish --tag=public
 ```
 
 ## Overview
@@ -176,6 +178,14 @@ Executes JavaScript in the browser.
 @endexecutescript
 ```
 
+#### `@location`
+
+Redirects the browser by setting the location to the provided URI.
+
+```php
+@location('/guide')
+```
+
 ### Using Controllers
 
 You can send SSE events using your own controller instead of a Blade view using the `DatastarEventStream` trait. Return the `getStreamedResponse()` method, passing a callable into it that sends zero or more SSE events using methods provided.
@@ -254,6 +264,14 @@ Executes JavaScript in the browser.
 
 ```php
 $this->executeScript('alert("Hello, world!")');
+```
+
+#### `location()`
+
+Redirects the browser by setting the location to the provided URI.
+
+```php
+$this->location('/guide');
 ```
 
 ### Signals

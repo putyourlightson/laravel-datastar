@@ -87,6 +87,19 @@ class Sse
     }
 
     /**
+     * Redirects the browser by setting the location to the provided URI.
+     */
+    public function location(string $uri, array $options = []): void
+    {
+        $options = $this->mergeEventOptions(
+            config('datastar.defaultExecuteScriptOptions', []),
+            $options,
+        );
+
+        $this->sendSseEvent('location', $uri, $options);
+    }
+
+    /**
      * Sets the server sent event method and options currently in process.
      */
     public function setSseInProcess(string $method, array $options = []): void

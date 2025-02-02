@@ -63,6 +63,7 @@ class DatastarServiceProvider extends ServiceProvider
      * @uses Sse::mergeSignals()
      * @uses Sse::removeSignals()
      * @uses Sse::executeScript()
+     * @uses Sse::location()
      * @uses Sse::setSseInProcess
      */
     private function registerDirectives(): void
@@ -94,6 +95,11 @@ class DatastarServiceProvider extends ServiceProvider
         Blade::directive('endexecutescript', function() {
             return $this->getDirective("executeScript(ob_get_clean())");
         });
+
+        Blade::directive('location', function(string $expression) {
+            return $this->getDirective("location($expression)");
+        });
+
     }
 
     private function getDirective(string $expression): string

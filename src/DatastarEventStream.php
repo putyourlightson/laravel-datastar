@@ -77,6 +77,14 @@ trait DatastarEventStream
     }
 
     /**
+     * Redirects the browser by setting the location to the provided URI.
+     */
+    public function location(string $uri, array $options = []): void
+    {
+        app(Sse::class)->location($uri, $options);
+    }
+
+    /**
      * Renders a view, catching exceptions.
      */
     protected function renderView(string $view, array $variables): void

@@ -42,19 +42,19 @@ php artisan vendor:publish --tag=public
 
 The Datastar package for Laravel allows you to handle backend requests by sending SSE events using [Blade directives](#blade-directives) in views _or_ [using controllers](#using-controllers). The former requires less setup and is more straightforward, while the latter provides more flexibility.
 
-Here’s a trivial example that toggles some backend state using the Blade view `_datastar/toggle.blade.php` to handle the request.
+Here’s a trivial example that toggles some backend state using the Blade view `datastar/toggle.blade.php` to handle the request.
 
 ```html
 <div data-signals-enabled="false">
     <div data-text="$enabled ? 'ON' : 'OFF'"></div>
-    <button data-on-click="{{ datastar()->get('_datastar/toggle') }}">
+    <button data-on-click="{{ datastar()->get('datastar.toggle') }}">
         <span id="button-text">Enable</span>
     </button>
 </div>
 ```
 
 ```php
-{{-- _datastar/toggle.blade.php --}}
+{{-- datastar/toggle.blade.php --}}
 
 @php
     $enabled = $signals->enabled;
@@ -94,10 +94,16 @@ The `datastar()` helper function is available in Blade views and returns a `Data
 
 #### `datastar()->get()`
 
-Returns a `@get()` action request to render a view at the given path.
+Returns a `@get()` action request to render a view at the given path. The value can be a file path _or_ a dot-separated path to a Blade view.
 
 ```php
-{{ datastar()->get('path/to/view') }}
+{{ datastar()->get('path.to.view') }}
+```
+
+Variables can be passed into the view using a second argument. Any variables passed in will become available in the rendered view. Variables are tamper-proof yet visible in the source code in plain text, so you should avoid passing in any sensitive data.
+
+```php
+{{ datastar()->get('path.to.view', ['offset' => 10]) }}
 ```
 
 #### `datastar()->post()`
@@ -105,7 +111,7 @@ Returns a `@get()` action request to render a view at the given path.
 Works the same as [`datastar()->get()`](#datastar-get) but returns a `@post()` action request to render a view at the given path. A CSRF token is automatically generated and sent along with the request.
 
 ```php
-{{ datastar()->post('path/to/view') }}
+{{ datastar()->post('path.to.view') }}
 ```
 
 #### `datastar()->put()`
@@ -113,7 +119,7 @@ Works the same as [`datastar()->get()`](#datastar-get) but returns a `@post()` a
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@put()` action request.
 
 ```php
-{{ datastar()->put('path/to/view') }}
+{{ datastar()->put('path.to.view') }}
 ```
 
 #### `datastar()->patch()`
@@ -121,7 +127,7 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@put()` 
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@patch()` action request.
 
 ```php
-{{ datastar()->patch('path/to/view') }}
+{{ datastar()->patch('path.to.view') }}
 ```
 
 #### `datastar()->delete()`
@@ -129,7 +135,7 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@patch()
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@delete()` action request.
 
 ```php
-{{ datastar()->delete('path/to/view') }}
+{{ datastar()->delete('path.to.view') }}
 ```
 
 ### Blade Directives
@@ -188,7 +194,7 @@ Redirects the browser by setting the location to the provided URI.
 
 ### Using Controllers
 
-You can send SSE events using your own controller instead of a Blade view using the `DatastarEventStream` trait. Return the `getStreamedResponse()` method, passing a callable into it that sends zero or more SSE events using methods provided.
+You can send SSE events using your own controller _instead_ of the Datastar controller by using the `DatastarEventStream` trait. Return the `getStreamedResponse()` method, passing a callable into it that sends zero or more SSE events using methods provided.
 
 ```php
 // routes/web.php

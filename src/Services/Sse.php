@@ -5,7 +5,10 @@
 
 namespace Putyourlightson\Datastar\Services;
 
+use Illuminate\Support\Facades\View;
+use Putyourlightson\Datastar\Models\Signals;
 use starfederation\datastar\ServerSentEventGenerator;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Throwable;
 
@@ -25,6 +28,28 @@ class Sse
      * The server sent event options currently in process.
      */
     private array|null $sseOptionsInProcess = [];
+
+    /**
+     * Returns a streamed response.
+     */
+    public function getStreamedResponse(callable $callable): StreamedResponse
+    {
+        $response = new StreamedResponse($callable);
+
+        foreach (ServerSentEventGenerator::headers() as $name => $value) {
+            $response->headers->set($name, $value);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Returns a signals model populated with signals passed into the request.
+     */
+    public function getSignals(): Signals
+    {
+        return new Signals(ServerSentEventGenerator::readSignals());
+    }
 
     /**
      * Merges HTML fragments into the DOM.
@@ -97,6 +122,34 @@ class Sse
         );
 
         $this->sendSseEvent('location', $uri, $options);
+    }
+
+    /**
+     * Renders a Datastar view.
+     */
+    public function renderDatastarView(string $view, array $variables = []): void
+    {
+        if (!View::exists($view)) {
+            $this->throwException('View `' . $view . '` does not exist.');
+        }
+
+        $signals = $this->getSignals();
+        $variables = array_merge(
+            [config('datastar.signalsVariableName', 'signals') => $signals],
+            $variables,
+        );
+
+        if (strtolower(request()->header('Content-Type')) === 'application/json') {
+            // Clear out params to prevent them from being processed by controller actions.
+            request()->query->replace();
+            request()->request->replace();
+        }
+
+        try {
+            view($view, $variables)->render();
+        } catch (Throwable $exception) {
+            $this->throwException($exception);
+        }
     }
 
     /**

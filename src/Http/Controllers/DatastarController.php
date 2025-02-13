@@ -26,20 +26,7 @@ class DatastarController extends Controller
                 $this->throwException('Submitted data was tampered.');
             }
 
-            $view = $config->view;
-            $signals = $this->getSignals();
-            $variables = array_merge(
-                [config('datastar.signalsVariableName', 'signals') => $signals],
-                $config->variables,
-            );
-
-            if (strtolower(request()->header('Content-Type')) === 'application/json') {
-                // Clear out params to prevent them from being processed by controller actions.
-                request()->query->replace();
-                request()->request->replace();
-            }
-
-            $this->renderView($view, $variables);
+            $this->renderDatastarView($config->view, $config->variables);
         });
     }
 }

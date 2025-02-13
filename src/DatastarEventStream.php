@@ -8,7 +8,6 @@ namespace Putyourlightson\Datastar;
 use Illuminate\Support\Facades\View;
 use Putyourlightson\Datastar\Models\Signals;
 use Putyourlightson\Datastar\Services\Sse;
-use starfederation\datastar\ServerSentEventGenerator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
@@ -19,13 +18,7 @@ trait DatastarEventStream
      */
     protected function getStreamedResponse(callable $callable): StreamedResponse
     {
-        $response = new StreamedResponse($callable);
-
-        foreach (ServerSentEventGenerator::headers() as $name => $value) {
-            $response->headers->set($name, $value);
-        }
-
-        return $response;
+        return app(Sse::class)->getStreamedResponse($callable);
     }
 
     /**
@@ -33,7 +26,7 @@ trait DatastarEventStream
      */
     protected function getSignals(): Signals
     {
-        return new Signals(ServerSentEventGenerator::readSignals());
+        return app(Sse::class)->getSignals();
     }
 
     /**
@@ -71,7 +64,7 @@ trait DatastarEventStream
     /**
      * Executes JavaScript in the browser.
      */
-    public function executeScript(string $script, array $options = []): void
+    protected function executeScript(string $script, array $options = []): void
     {
         app(Sse::class)->executeScript($script, $options);
     }
@@ -79,25 +72,17 @@ trait DatastarEventStream
     /**
      * Redirects the browser by setting the location to the provided URI.
      */
-    public function location(string $uri, array $options = []): void
+    protected function location(string $uri, array $options = []): void
     {
         app(Sse::class)->location($uri, $options);
     }
 
     /**
-     * Renders a view, catching exceptions.
+     * Renders a Datastar view.
      */
-    protected function renderView(string $view, array $variables): void
+    protected function renderDatastarView(string $view, array $variables = []): void
     {
-        if (!View::exists($view)) {
-            $this->throwException('View `' . $view . '` does not exist.');
-        }
-
-        try {
-            view($view, $variables)->render();
-        } catch (Throwable $exception) {
-            $this->throwException($exception);
-        }
+        app(Sse::class)->renderDatastarView($view, $variables);
     }
 
     /**

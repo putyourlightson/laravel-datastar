@@ -99,7 +99,6 @@ class DatastarServiceProvider extends ServiceProvider
         Blade::directive('location', function(string $expression) {
             return $this->getDirective("location($expression)");
         });
-
     }
 
     private function getDirective(string $expression): string

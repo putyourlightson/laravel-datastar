@@ -283,23 +283,7 @@ $this->location('/guide');
 Renders a Datastar view.
 
 ```php
-namespace App\Http\Controllers;
-
-use Illuminate\Routing\Controller;
-use Putyourlightson\Datastar\DatastarEventStream;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-
-class MyController extends Controller
-{
-    use DatastarEventStream;
-
-    public function index(): StreamedResponse
-    {
-        return $this->getStreamedResponse(function() {
-            $this->renderDatastarView('datastar.toggle', ['enabled' => true]);
-        });
-    }
-}
+$this->renderDatastarView('datastar.toggle', ['enabled' => true]);
 ```
 
 ### Signals

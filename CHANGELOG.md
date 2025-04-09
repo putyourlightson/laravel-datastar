@@ -1,5 +1,11 @@
 # Release Notes for Datastar
 
+## 1.0.0-beta.7 - 2025-04-09
+
+### Changed
+
+- Update the Datastar library to version 1.0.0-beta.11. 
+
 ## 1.0.0-beta.6 - 2025-03-01
 
 ### Changed

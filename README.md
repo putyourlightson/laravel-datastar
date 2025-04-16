@@ -138,6 +138,18 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@delete(
 {{ datastar()->delete('path.to.view') }}
 ```
 
+#### `datastar()->getFragments()`
+
+Returns a `@get()` action request to render and automatically _merge_ the fragments contained in a view at the given path. The view should contain one or more fragments to be merged.
+
+```php
+{{ datastar()->getFragments('path.to.view') }}
+```
+
+```html
+<div id="swap">The view should contain one or more fragments to be merged.</div> 
+```
+
 ### Blade Directives
 
 #### `@mergefragments`

@@ -1,5 +1,11 @@
 # Release Notes for Datastar
 
+## 1.0.0-beta.8 - 2025-04-15
+
+### Added
+
+- Added a `datastar()->getFragments()` helper method that fetches and merge fragments into the DOM.
+
 ## 1.0.0-beta.7 - 2025-04-09
 
 ### Changed

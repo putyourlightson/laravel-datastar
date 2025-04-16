@@ -125,9 +125,9 @@ class Sse
     }
 
     /**
-     * Renders a Datastar view.
+     * Returns a rendered Datastar view.
      */
-    public function renderDatastarView(string $view, array $variables = []): void
+    public function renderDatastarView(string $view, array $variables = []): string
     {
         if (!View::exists($view)) {
             $this->throwException('View `' . $view . '` does not exist.');
@@ -146,10 +146,12 @@ class Sse
         }
 
         try {
-            view($view, $variables)->render();
+            $output = view($view, $variables)->render();
         } catch (Throwable $exception) {
             $this->throwException($exception);
         }
+
+        return $output;
     }
 
     /**

@@ -53,11 +53,39 @@ class Datastar
     }
 
     /**
+     * Returns a Datastar `@get` action that fetches and merges fragments.
+     */
+    public function getFragments(string $view, array $variables = [], array $options = []): string
+    {
+        return $this->getAction('getFragments', $view, $variables, $options);
+    }
+
+    /**
      * Returns a Datastar action.
      */
     private function getAction(string $method, string $view, array $variables, array $options): string
     {
-        $url = $this->getUrl($view, $variables);
+        $config = new Config([
+            'view' => $view,
+            'variables' => $variables,
+        ]);
+
+        if ($method === 'getFragments') {
+            $config->getFragments = true;
+            $method = 'get';
+        }
+
+        try {
+            $config->validate();
+        } catch (ValidationException $exception) {
+            throw new BadRequestHttpException($exception->getMessage());
+        }
+
+        $url = action(
+            [DatastarController::class, 'index'],
+            ['config' => $config->getHashed()],
+        );
+
         $args = ["'$url'"];
 
         if ($method !== 'get') {
@@ -73,27 +101,5 @@ class Datastar
         $args = implode(', ', $args);
 
         return "@$method($args)";
-    }
-
-    /**
-     * Returns a Datastar action URL.
-     */
-    private function getUrl(string $view, array $variables = []): string
-    {
-        $config = new Config([
-            'view' => $view,
-            'variables' => $variables,
-        ]);
-
-        try {
-            $config->validate();
-        } catch (ValidationException $exception) {
-            throw new BadRequestHttpException($exception->getMessage());
-        }
-
-        return action(
-            [DatastarController::class, 'index'],
-            ['config' => $config->getHashed()],
-        );
     }
 }

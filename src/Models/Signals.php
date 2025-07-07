@@ -80,7 +80,7 @@ class Signals
     {
         $this->removeNestedValue($name);
 
-        app(Sse::class)->removeSignals([$name]);
+        app(Sse::class)->patchSignals([$name => null]);
 
         return $this;
     }

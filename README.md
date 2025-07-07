@@ -62,13 +62,13 @@ Here’s a trivial example that toggles some backend state using the Blade view 
     $enabled = !$enabled;
 @endphp
 
-@mergesignals(['enabled' => $enabled])
+@patchsignals(['enabled' => $enabled])
 
-@mergefragments
+@patchelements
     <span id="button-text">
         {{ $enabled ? 'Disable' : 'Enable' }}
     </span>
-@endmergefragments
+@endpatchelements
 ```
 
 ## Usage
@@ -138,52 +138,36 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@delete(
 {{ datastar()->delete('path.to.view') }}
 ```
 
-#### `datastar()->getFragments()`
-
-Returns a `@get()` action request to render and automatically _merge_ the fragments contained in a view at the given path. The view should contain one or more fragments to be merged.
-
-```php
-{{ datastar()->getFragments('path.to.view') }}
-```
-
 ```html
-<div id="swap">The view should contain one or more fragments to be merged.</div> 
+<div id="swap">The view should contain one or more elements to be patched.</div> 
 ```
 
 ### Blade Directives
 
-#### `@mergefragments`
+#### `@patchelements`
 
-Merges one or more fragments into the DOM.
+Patches elements into the DOM.
 
 ```php
-@mergefragments
-    <div id="new-fragment">New fragment</div>
-@endmergefragments
+@patchelements
+    <div id="new-element">New element</div>
+@endpatchelements
 ```
 
-#### `@removefragments`
+#### `@removeelements`
 
-Removes one or more HTML fragments that match the provided selector from the DOM.
+Removes elements that match the provided selector from the DOM.
 
 ```php
-@removefragments('#old-fragment')
+@removeelements('#old-element')
 ```
 
-#### `@mergesignals`
+#### `@patchsignals`
 
-Updates the signals with new values.
-
-```php
-@mergesignals(['foo' => 1, 'bar' => 2])
-```
-
-#### `@removesignals`
-
-Removes signals that match one or more provided paths.
+Patches signals with new values.
 
 ```php
-@removesignals(['foo', 'bar'])
+@patchsignals(['foo' => 1, 'bar' => 2])
 ```
 
 #### `@executescript`
@@ -231,8 +215,8 @@ class MyController extends Controller
     {
         return $this->getStreamedResponse(function() {
             $signals = $this->getSignals();
-            $this->mergeSignals(['enabled' => $signals->enabled ? false : true]);
-            $this->mergeFragments('
+            $this->patchSignals(['enabled' => $signals->enabled ? false : true]);
+            $this->patchElements('
                 <span id="button-text">' . ($signals->enabled ? 'Enable' : 'Disable') . '</span>
             ');
         });
@@ -242,36 +226,28 @@ class MyController extends Controller
 
 ### DatastarEventStream Trait
 
-#### `mergeFragments()`
+#### `patchElements()`
 
-Merges one or more fragments into the DOM.
+Patches elements into the DOM.
 
 ```php
-$this->mergeFragments('<div id="new-fragment">New fragment</div>');
+$this->patchElements('<div id="new-element">New element</div>');
 ```
 
-#### `removeFragments()`
+#### `removeElements()`
 
-Removes one or more HTML fragments that match the provided selector from the DOM.
+Removes elements that match the provided selector from the DOM.
 
 ```php
-$this->removeFragments('#old-fragment');
+$this->removeElements('#old-element');
 ```
 
-#### `mergeSignals()`
+#### `patchSignals()`
 
-Updates the signals with new values.
-
-```php
-$this->mergeSignals(['foo' => 1, 'bar' => 2]);
-```
-
-#### `removeSignals()`
-
-Removes signals that match one or more provided paths.
+Patches signals with new values.
 
 ```php
-$this->removeSignals(['foo', 'bar']);
+$this->patchSignals(['foo' => 1, 'bar' => 2]);
 ```
 
 #### `executeScript()`
@@ -322,7 +298,7 @@ When working with signals, either in views rendered by the Datastar controller o
 ```
 
 > [!NOTE]
-> Signals updates _cannot_ be wrapped in `{% mergefragment %}` tags, since each update creates a server-sent event which will conflict with the fragment’s contents.
+> Signal patches _cannot_ be wrapped in `@patchelements` directives, since each update creates a server-sent event which will conflict with the element’s contents.
 
 ---
 

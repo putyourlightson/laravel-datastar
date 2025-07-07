@@ -53,14 +53,6 @@ class Datastar
     }
 
     /**
-     * Returns a Datastar `@get` action that fetches and merges fragments.
-     */
-    public function getFragments(string $view, array $variables = [], array $options = []): string
-    {
-        return $this->getAction('getFragments', $view, $variables, $options);
-    }
-
-    /**
      * Returns a Datastar action.
      */
     private function getAction(string $method, string $view, array $variables, array $options): string
@@ -69,11 +61,6 @@ class Datastar
             'view' => $view,
             'variables' => $variables,
         ]);
-
-        if ($method === 'getFragments') {
-            $config->getFragments = true;
-            $method = 'get';
-        }
 
         try {
             $config->validate();

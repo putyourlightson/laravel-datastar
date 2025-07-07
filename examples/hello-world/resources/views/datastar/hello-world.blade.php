@@ -5,11 +5,11 @@
 @endphp
 
 @for ($i = 0; $i < strlen($message); $i++)
-    @mergefragments
+    @patchelements
         <div id="message">
             {{ substr($message, 0, $i + 1) }}
         </div>
-    @endmergefragments
+    @endpatchelements
     @php
         // Sleep for the provided delay in milliseconds.
         usleep($delay * 1000);

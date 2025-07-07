@@ -7,6 +7,12 @@ namespace Putyourlightson\Datastar\Services;
 
 use Illuminate\Support\Facades\View;
 use Putyourlightson\Datastar\Models\Signals;
+use starfederation\datastar\events\EventInterface;
+use starfederation\datastar\events\ExecuteScript;
+use starfederation\datastar\events\Location;
+use starfederation\datastar\events\PatchElements;
+use starfederation\datastar\events\PatchSignals;
+use starfederation\datastar\events\RemoveElements;
 use starfederation\datastar\ServerSentEventGenerator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -15,9 +21,14 @@ use Throwable;
 class Sse
 {
     /**
-     * The server sent event generator.
+     * The response data.
      */
-    private ServerSentEventGenerator|null $sseGenerator = null;
+    private string $responseData = '';
+
+    /**
+     * Whether to send SSE events when processing them.
+     */
+    private bool $sendSseEvents = true;
 
     /**
      * The server sent event method currently in process.
@@ -52,76 +63,74 @@ class Sse
     }
 
     /**
-     * Merges HTML fragments into the DOM.
+     * Patches elements into the DOM.
      */
-    public function mergeFragments(string $data, array $options = []): void
+    public function patchElements(string $data, array $options = [], bool $send = true): void
     {
-        $options = $this->mergeEventOptions(
-            config('datastar.defaultFragmentOptions', []),
+        $options = $this->patchEventOptions(
+            config('datastar.defaultElementOptions', []),
             $options,
         );
+        $event = new PatchElements($data, $options);
 
-        $this->sendSseEvent('mergeFragments', $data, $options);
+        $this->processEvent($event, $send);
     }
 
     /**
-     * Removes HTML fragments from the DOM.
+     * Removes elements from the DOM.
      */
-    public function removeFragments(string $selector, array $options = []): void
+    public function removeElements(string $selector, array $options = [], bool $send = true): void
     {
-        $options = $this->mergeEventOptions(
-            config('datastar.defaultFragmentOptions', []),
+        $options = $this->patchEventOptions(
+            config('datastar.defaultElementOptions', []),
             $options,
+            ['mode' => 'remove']
         );
+        $event = new PatchElements($selector, $options);
 
-        $this->sendSseEvent('removeFragments', $selector, $options);
+        $this->processEvent($event, $send);
     }
 
     /**
-     * Merges signals.
+     * Patches signals.
      */
-    public function mergeSignals(array $signals, array $options = []): void
+    public function patchSignals(array $signals, array $options = [], bool $send = true): void
     {
-        $options = $this->mergeEventOptions(
+        $options = $this->patchEventOptions(
             config('datastar.defaultSignalOptions', []),
             $options,
         );
+        $event = new PatchSignals($signals, $options);
 
-        $this->sendSseEvent('mergeSignals', $signals, $options);
-    }
-
-    /**
-     * Removes signal paths.
-     */
-    public function removeSignals(array $paths, array $options = []): void
-    {
-        $this->sendSseEvent('removeSignals', $paths, $options);
+        $this->processEvent($event, $send);
     }
 
     /**
      * Executes JavaScript in the browser.
      */
-    public function executeScript(string $script, array $options = []): void
+    public function executeScript(string $script, array $options = [], bool $send = true): void
     {
-        $options = $this->mergeEventOptions(
+        $options = $this->patchEventOptions(
             config('datastar.defaultExecuteScriptOptions', []),
             $options,
         );
+        $event = new ExecuteScript($script, $options);
 
-        $this->sendSseEvent('executeScript', $script, $options);
+        $this->processEvent($event, $send);
     }
 
     /**
      * Redirects the browser by setting the location to the provided URI.
      */
-    public function location(string $uri, array $options = []): void
+    public function location(string $uri, array $options = [], bool $send = true): void
     {
-        $options = $this->mergeEventOptions(
+        $options = $this->patchEventOptions(
             config('datastar.defaultExecuteScriptOptions', []),
             $options,
         );
+        $event = new Location($uri, $options);
 
-        $this->sendSseEvent('location', $uri, $options);
+        $this->processEvent($event, $send);
     }
 
     /**
@@ -157,7 +166,7 @@ class Sse
     /**
      * Sets the server sent event method and options currently in process.
      */
-    public function setSseInProcess(string $method, array $options = []): void
+    public function setSseInProcess(?string $method, array $options = []): void
     {
         $this->sseMethodInProcess = $method;
         $this->sseOptionsInProcess = $options;
@@ -180,9 +189,9 @@ class Sse
     }
 
     /**
-     * Returns merged event options with null values removed.
+     * Returns patch event options with null values removed.
      */
-    private function mergeEventOptions(array ...$optionSets): array
+    private function patchEventOptions(array ...$optionSets): array
     {
         $options = array_merge(
             config('datastar.defaultEventOptions', []),
@@ -199,41 +208,70 @@ class Sse
     }
 
     /**
-     * Returns a server sent event generator.
+     * Processes an event.
      */
-    private function getSseGenerator(): ServerSentEventGenerator
+    private function processEvent(EventInterface $event, bool $send): void
     {
-        if ($this->sseGenerator === null) {
-            $this->sseGenerator = new ServerSentEventGenerator();
+        $this->verifySseMethodInProcess($event);
+
+        $shouldSend = $this->sendSseEvents && $send;
+
+        if ($shouldSend) {
+            // Clean and end all existing output buffers.
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
         }
 
-        return $this->sseGenerator;
+        $output = $event->getOutput();
+
+        if ($shouldSend) {
+            echo $output;
+
+            if (ob_get_contents()) {
+                ob_end_flush();
+            }
+            flush();
+        }
+
+        // Append the resulting output to the response data.
+        $this->responseData .= $output;
+
+        if ($shouldSend) {
+            // Start a new output buffer to capture any subsequent inline content.
+            ob_start();
+        }
+
+        $this->setSseInProcess(null);
     }
 
     /**
-     * Sends an SSE event with arguments and cleans output buffers.
+     * Verifies that another SSE method is not already in process.
      */
-    private function sendSseEvent(string $method, ...$args): void
+    private function verifySseMethodInProcess(EventInterface $event): void
     {
-        if ($this->sseMethodInProcess && $this->sseMethodInProcess !== $method) {
-            $message = 'The SSE method `' . $method . '` cannot be called when `' . $this->sseMethodInProcess . '` is already in process.';
-            if (in_array($method, ['mergeSignals', 'removeSignals'])) {
-                $message .= ' Ensure that you are not setting or removing signals inside `{% fragment %}` or `{% executescript %}` tags.';
-            }
+        if ($this->sseMethodInProcess === null) {
+            return;
+        }
 
+        $sseMethods = [
+            PatchElements::class => 'patchElements',
+            RemoveElements::class => 'removeElements',
+            PatchSignals::class => 'patchSignals',
+            ExecuteScript::class => 'executeScript',
+        ];
+
+        $method = $sseMethods[$event::class] ?? null;
+        if ($method === null) {
+            return;
+        }
+
+        if ($method !== $this->sseMethodInProcess) {
+            $message = 'The SSE method `' . $method . '` cannot be called when `' . $this->sseMethodInProcess . '` is already in process.';
+            if ($method === 'patchElements') {
+                $message .= ' Ensure that you are not setting or removing signals inside `@patchelements` or `@executescript` directives.';
+            }
             $this->throwException($message);
         }
-
-        // Clean and end all existing output buffers.
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
-
-        $this->getSseGenerator()->$method(...$args);
-
-        $this->sseMethodInProcess = null;
-
-        // Start a new output buffer to capture any subsequent inline content.
-        ob_start();
     }
 }

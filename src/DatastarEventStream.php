@@ -5,7 +5,6 @@
 
 namespace Putyourlightson\Datastar;
 
-use Illuminate\Support\Facades\View;
 use Putyourlightson\Datastar\Models\Signals;
 use Putyourlightson\Datastar\Services\Sse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -30,35 +29,27 @@ trait DatastarEventStream
     }
 
     /**
-     * Merges HTML fragments into the DOM.
+     * Patches elements into the DOM.
      */
-    protected function mergeFragments(string $data, array $options = []): void
+    protected function patchElements(string $data, array $options = []): void
     {
-        app(Sse::class)->mergeFragments($data, $options);
+        app(Sse::class)->patchElements($data, $options);
     }
 
     /**
-     * Removes HTML fragments from the DOM.
+     * Removes elements from the DOM.
      */
-    protected function removeFragments(string $selector, array $options = []): void
+    protected function removeElements(string $selector, array $options = []): void
     {
-        app(Sse::class)->removeFragments($selector, $options);
+        app(Sse::class)->removeElements($selector, $options);
     }
 
     /**
-     * Merges signals.
+     * Patches signals.
      */
-    protected function mergeSignals(array $signals, array $options = []): void
+    protected function patchSignals(array $signals, array $options = []): void
     {
-        app(Sse::class)->mergeSignals($signals, $options);
-    }
-
-    /**
-     * Removes signal paths.
-     */
-    protected function removeSignals(array $paths, array $options = []): void
-    {
-        app(Sse::class)->removeSignals($paths, $options);
+        app(Sse::class)->patchSignals($signals, $options);
     }
 
     /**

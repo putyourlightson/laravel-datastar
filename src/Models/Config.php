@@ -16,7 +16,6 @@ class Config
 
     public string $view = '';
     public array $variables = [];
-    public bool $getFragments = false;
 
     /**
      * Creates a new instance from a hashed config string.
@@ -61,7 +60,6 @@ class Config
         $attributes = array_filter([
             'view' => $this->view,
             'variables' => $this->variables,
-            'getFragments' => $this->getFragments,
         ]);
         $encoded = json_encode($attributes);
 

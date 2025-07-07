@@ -54,7 +54,7 @@ class Signals
     {
         $this->setNestedValue($name, $value);
 
-        app(Sse::class)->mergeSignals($this->getNestedArrayValue($name, $value));
+        app(Sse::class)->patchSignals($this->getNestedArrayValue($name, $value));
 
         return $this;
     }
@@ -68,7 +68,7 @@ class Signals
             $this->values[$name] = $value;
         }
 
-        app(Sse::class)->mergeSignals($values);
+        app(Sse::class)->patchSignals($values);
 
         return $this;
     }

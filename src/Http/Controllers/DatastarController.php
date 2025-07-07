@@ -26,11 +26,7 @@ class DatastarController extends Controller
                 $this->throwException('Submitted data was tampered.');
             }
 
-            $output = $this->renderDatastarView($config->view, $config->variables);
-
-            if ($config->getFragments) {
-                $this->mergeFragments($output);
-            }
+            $this->renderDatastarView($config->view, $config->variables);
         });
     }
 }

@@ -22,9 +22,9 @@ return [
     ],
 
     /**
-     * The fragment options to override the Datastar defaults. Null values will be ignored.
+     * The element options to override the Datastar defaults. Null values will be ignored.
      */
-    'defaultFragmentOptions' => [
+    'defaultElementOptions' => [
         'settleDuration' => null,
         'useViewTransition' => null,
     ],

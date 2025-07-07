@@ -58,34 +58,29 @@ class DatastarServiceProvider extends ServiceProvider
     }
 
     /**
-     * @uses Sse::mergeFragments()
-     * @uses Sse::removeFragments()
-     * @uses Sse::mergeSignals()
-     * @uses Sse::removeSignals()
+     * @uses Sse::patchElements()
+     * @uses Sse::removeElements()
+     * @uses Sse::patchSignals()
      * @uses Sse::executeScript()
      * @uses Sse::location()
      * @uses Sse::setSseInProcess
      */
     private function registerDirectives(): void
     {
-        Blade::directive('mergefragments', function(string $expression) {
-            return $this->getDirective("setSseInProcess('mergeFragments', $expression); ob_start()");
+        Blade::directive('patchelements', function(string $expression) {
+            return $this->getDirective("setSseInProcess('patchElements', $expression); ob_start()");
         });
 
-        Blade::directive('endmergefragments', function() {
-            return $this->getDirective("mergeFragments(ob_get_clean())");
+        Blade::directive('endpatchelements', function() {
+            return $this->getDirective("patchElements(ob_get_clean())");
         });
 
-        Blade::directive('removefragments', function(string $expression) {
-            return $this->getDirective("removeFragments($expression)");
+        Blade::directive('removeelements', function(string $expression) {
+            return $this->getDirective("removeElements($expression)");
         });
 
-        Blade::directive('mergesignals', function(string $expression) {
-            return $this->getDirective("mergeSignals($expression)");
-        });
-
-        Blade::directive('removesignals', function(string $expression) {
-            return $this->getDirective("removeSignals($expression)");
+        Blade::directive('patchsignals', function(string $expression) {
+            return $this->getDirective("patchSignals($expression)");
         });
 
         Blade::directive('executescript', function(string $expression) {

@@ -1,6 +1,6 @@
 @php
     /** @var \Putyourlightson\Datastar\Models\Signals $signals */
-    $delay = $signals->get('delay', 0);
+    $delay = $signals['delay'] ?? 100;
     $message = 'Hello, world!';
 @endphp
 

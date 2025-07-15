@@ -6,6 +6,7 @@
 namespace Putyourlightson\Datastar\Services;
 
 use Illuminate\Support\Facades\View;
+use Putyourlightson\Datastar\Helpers\Request;
 use Putyourlightson\Datastar\Models\Signals;
 use starfederation\datastar\events\EventInterface;
 use starfederation\datastar\events\ExecuteScript;
@@ -55,11 +56,11 @@ class Sse
     }
 
     /**
-     * Returns a signals model populated with signals passed into the request.
+     * Reads and returns the signals passed into the request.
      */
-    public function getSignals(): Signals
+    public function readSignals(): array
     {
-        return new Signals(ServerSentEventGenerator::readSignals());
+        return Request::readSignals();
     }
 
     /**
@@ -142,7 +143,7 @@ class Sse
             $this->throwException('View `' . $view . '` does not exist.');
         }
 
-        $signals = $this->getSignals();
+        $signals = $this->readSignals();
         $variables = array_merge(
             [config('datastar.signalsVariableName', 'signals') => $signals],
             $variables,

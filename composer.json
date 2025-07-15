@@ -6,8 +6,8 @@
   "license": "mit",
   "require": {
     "php": "^8.2",
-    "laravel/framework": "^11.0",
-    "starfederation/datastar-php": "1.0.0-beta.17"
+    "laravel/framework": ">=11.0",
+    "starfederation/datastar-php": "1.0.0-RC.1"
   },
   "require-dev": {
     "craftcms/ecs": "dev-main",

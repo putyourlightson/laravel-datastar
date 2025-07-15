@@ -8,7 +8,7 @@
 ### A reactive hypermedia framework for Laravel.
 
 > [!WARNING]
-> **This package is in beta and its API may change.**
+> Updating from the beta? View the [release notes](https://github.com/putyourlightson/laravel-datastar/blob/develop/CHANGELOG.md).
 
 This package integrates the [Datastar hypermedia framework](https://data-star.dev/) with [Laravel](https://laravel.com/), allowing you to create reactive frontends driven by Blade views _or_ controllers. It aims to replace the need for front-end frameworks such as React, Vue.js and Alpine.js + htmx, and instead lets you manage state and use logic from your Laravel backend.
 
@@ -33,7 +33,7 @@ This package requires [Laravel](https://laravel.com/) 11.0.0 or later.
 Install manually using composer, then run the `artisan vendor:publish --tag=public` command to publish the public assets.
 
 ```shell
-composer require putyourlightson/laravel-datastar:^1.0.0-beta.1
+composer require putyourlightson/laravel-datastar:^1.0.0-RC.1
 
 php artisan vendor:publish --tag=public
 ```
@@ -57,9 +57,7 @@ Here’s a trivial example that toggles some backend state using the Blade view 
 {{-- datastar/toggle.blade.php --}}
 
 @php
-    $enabled = $signals->enabled;
-    // Do something with the state and toggle the enabled state.
-    $enabled = !$enabled;
+    $enabled = $signals['enabled'] ?? false;
 @endphp
 
 @patchsignals(['enabled' => $enabled])
@@ -150,7 +148,7 @@ Patches elements into the DOM.
 
 ```php
 @patchelements
-    <div id="new-element">New element</div>
+    <div id="new">New element</div>
 @endpatchelements
 ```
 
@@ -159,12 +157,12 @@ Patches elements into the DOM.
 Removes elements that match the provided selector from the DOM.
 
 ```php
-@removeelements('#old-element')
+@removeelements('#old')
 ```
 
 #### `@patchsignals`
 
-Patches signals with new values.
+Patches signals into the frontend.
 
 ```php
 @patchsignals(['foo' => 1, 'bar' => 2])
@@ -214,7 +212,7 @@ class MyController extends Controller
     public function index(): StreamedResponse
     {
         return $this->getStreamedResponse(function() {
-            $signals = $this->getSignals();
+            $signals = $this->readSignals();
             $this->patchSignals(['enabled' => $signals->enabled ? false : true]);
             $this->patchElements('
                 <span id="button-text">' . ($signals->enabled ? 'Enable' : 'Disable') . '</span>
@@ -244,7 +242,7 @@ $this->removeElements('#old-element');
 
 #### `patchSignals()`
 
-Patches signals with new values.
+Patches signals into the frontend.
 
 ```php
 $this->patchSignals(['foo' => 1, 'bar' => 2]);
@@ -276,24 +274,12 @@ $this->renderDatastarView('datastar.toggle', ['enabled' => true]);
 
 ### Signals
 
-When working with signals, either in views rendered by the Datastar controller or by calling `$this->getSignals()`, you are working with a [Signals model](https://github.com/putyourlightson/laravel-datastar/blob/develop/src/Models/Signals.php), which provides a simple way to manage signals.
+Signals can be accessed within views rendered by Datastar using the signals variable, which is an array of signals received by the request that is automatically injected into the template.
 
 ```php
 @php
     // Getting signal values.
-    $username = $signals->username;
-    $username = $signals->get('username');
-    $username = $signals->get('user.username');
-    
-    // Setting signal values.
-    $username = $signals->username('bobby');
-    $username = $signals->set('username', 'bobby');
-    $username = $signals->set('user.username', 'bobby');
-    $username = $signals->setValues(['user.username' => 'bobby', 'success' => true]);
-    
-    // Removing signal values.
-    $username = $signals->remove('username');
-    $username = $signals->remove('user.username');
+    $username = $signals['username'];
 @endphp
 ```
 

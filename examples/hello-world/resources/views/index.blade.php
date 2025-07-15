@@ -10,7 +10,7 @@
             <h1 class="text-gray-900 dark:text-white text-3xl font-semibold">
                 Datastar SDK Demo
             </h1>
-            <img src="https://data-star.dev/static/images/rocket.png" alt="Rocket" width="64" height="64"/>
+            <img src="https://putyourlightson.com/assets/logos/datastar.svg" alt="Datastar Logo" width="64" height="64"/>
         </div>
         <p class="mt-2">
             SSE events will be streamed from the backend to the frontend.

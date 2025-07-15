@@ -5,6 +5,7 @@
 
 namespace Putyourlightson\Datastar;
 
+use Putyourlightson\Datastar\Helpers\Request;
 use Putyourlightson\Datastar\Models\Signals;
 use Putyourlightson\Datastar\Services\Sse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -21,11 +22,11 @@ trait DatastarEventStream
     }
 
     /**
-     * Returns a signals model populated with signals passed into the request.
+     * Reads and returns the signals passed into the request.
      */
-    protected function getSignals(): Signals
+    protected function readSignals(): array
     {
-        return app(Sse::class)->getSignals();
+        return Request::readSignals();
     }
 
     /**

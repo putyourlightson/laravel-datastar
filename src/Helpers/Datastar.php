@@ -89,4 +89,12 @@ class Datastar
 
         return "@$method($args)";
     }
+
+    /**
+     * Reads and returns the signals passed into the request.
+     */
+    public function readSignals(): array
+    {
+        return Request::readSignals();
+    }
 }

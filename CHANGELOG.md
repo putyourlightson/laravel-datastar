@@ -1,13 +1,15 @@
 # Release Notes for Datastar
 
-## 1.0.0-RC.1 - Unreleased
+## 1.0.0-RC.1 - 2025-07-15
 
-- The package now requires Datastar [v1.0.0-RC.1](https://github.com/starfederation/datastar/releases/tag/v1.0.0-RC.1).
+- The package now requires Datastar [1.0.0-RC.1](https://github.com/starfederation/datastar/releases/tag/v1.0.0-RC.1).
 - Renamed the `fragments` Blade directive to `patchelements`.
 - Renamed the `removefragments` Blade directive to `removeelements`.
+- Renamed the `mergesignals` Blade directive to `patchsignals`.
 - Renamed the `defaultFragmentOptions` config setting to `defaultElementOptions`.
 - Removed the `removesignals` Blade directive.
 - Removed the `datastar()->getFragments()` helper method.
+- Removed the `SignalsModel` class. The `signals` variable passed into Datastar templates is now a regular array. Use the `patchsignals` Twig tag to update and remove signals.
 
 ## 1.0.0-beta.8 - 2025-04-15
 

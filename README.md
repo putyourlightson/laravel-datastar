@@ -213,9 +213,9 @@ class MyController extends Controller
     {
         return $this->getStreamedResponse(function() {
             $signals = $this->readSignals();
-            $this->patchSignals(['enabled' => $signals->enabled ? false : true]);
+            $this->patchSignals(['enabled' => $signals['enabled'] ? false : true]);
             $this->patchElements('
-                <span id="button-text">' . ($signals->enabled ? 'Enable' : 'Disable') . '</span>
+                <span id="button-text">' . ($signals['enabled'] ? 'Enable' : 'Disable') . '</span>
             ');
         });
     }

@@ -7,10 +7,11 @@ namespace Putyourlightson\Datastar\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use starfederation\datastar\Consts;
 
 class RegisterScript
 {
+    public const VERSION = '1.0.0-RC.2';
+
     public function handle(Request $request, Closure $next)
     {
         $response = $next($request);
@@ -24,7 +25,7 @@ class RegisterScript
         }
 
         $content = $response->getContent();
-        $path = asset('vendor/datastar/' . Consts::VERSION . '/datastar.js');
+        $path = asset('vendor/datastar/' . self::VERSION . '/datastar.js');
         $asset = '<script type="module" src="' . $path . '"></script>';
         $content = str_replace('</head>', $asset . '</head>', $content);
         $response->setContent($content);

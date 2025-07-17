@@ -1,5 +1,9 @@
 # Release Notes for Datastar
 
+## 1.0.0-RC.2 - 2025-07-17
+
+- The package now includes Datastar [1.0.0-RC.2](https://github.com/starfederation/datastar/releases/tag/v1.0.0-RC.2).
+
 ## 1.0.0-RC.1 - 2025-07-15
 
 - The package now requires Datastar [1.0.0-RC.1](https://github.com/starfederation/datastar/releases/tag/v1.0.0-RC.1).

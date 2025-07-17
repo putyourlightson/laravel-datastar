@@ -85,7 +85,6 @@ class Sse
         $options = $this->patchEventOptions(
             config('datastar.defaultElementOptions', []),
             $options,
-            ['mode' => 'remove']
         );
         $event = new RemoveElements($selector, $options);
 

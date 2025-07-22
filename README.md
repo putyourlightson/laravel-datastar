@@ -104,6 +104,12 @@ Variables can be passed into the view using a second argument. Any variables pas
 {{ datastar()->get('path.to.view', ['offset' => 10]) }}
 ```
 
+Options can be passed into the `@get()` action using a third argument. 
+
+```php
+{{ datastar()->get('path.to.view', ['offset' => 10], ['contentType' => 'form']) }}
+```
+
 #### `datastar()->post()`
 
 Works the same as [`datastar()->get()`](#datastar-get) but returns a `@post()` action request to render a view at the given path. A CSRF token is automatically generated and sent along with the request.

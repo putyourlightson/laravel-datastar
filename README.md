@@ -283,9 +283,23 @@ $this->renderDatastarView('datastar.toggle', ['enabled' => true]);
 Signals can be accessed within views rendered by Datastar using the signals variable, which is an array of signals received by the request that is automatically injected into the template.
 
 ```php
+<input data-bind-username>
+<button data-on-click="{{ datastar()->get('path.to.view') }}">
+    Check
+</button>
+```
+
+```php
 @php
-    // Getting signal values.
     $username = $signals['username'];
+@endphp
+```
+
+If you ever need to read the signals in a request that is *not* handled by the Datastar package, you can do so as follows.
+
+```php
+@php
+    $signals = datastar()->readSignals();
 @endphp
 ```
 

@@ -7,7 +7,6 @@ namespace Putyourlightson\Datastar\Services;
 
 use Illuminate\Support\Facades\View;
 use Putyourlightson\Datastar\Helpers\Request;
-use Putyourlightson\Datastar\Models\Signals;
 use starfederation\datastar\events\EventInterface;
 use starfederation\datastar\events\ExecuteScript;
 use starfederation\datastar\events\Location;

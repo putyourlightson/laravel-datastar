@@ -6,7 +6,6 @@
 namespace Putyourlightson\Datastar;
 
 use Putyourlightson\Datastar\Helpers\Request;
-use Putyourlightson\Datastar\Models\Signals;
 use Putyourlightson\Datastar\Services\Sse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;

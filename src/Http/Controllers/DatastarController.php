@@ -38,7 +38,15 @@ class DatastarController extends Controller
         if (is_array($route)) {
             /** @var string|object|null $controller */
             $controller = $route[0] ?? null;
-            if (!$controller || !class_exists($controller)) {
+            if (empty($controller)) {
+                $this->throwException('A controller must be specified in the route.');
+            }
+
+            if (!str_contains($controller, '\\')) {
+                $controller = 'App\\Http\\Controllers\\' . $controller;
+            }
+
+            if (!class_exists($controller)) {
                 $this->throwException("Controller `$controller` does not exist. Make sure you’re using a valid namespace and that the class is autoloaded.");
             }
 

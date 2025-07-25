@@ -64,7 +64,7 @@ class DatastarController extends Controller
             $this->throwException("Method `$method` does not exist on controller `$controllerName`.");
         }
 
-        $boundParams = $this->resolveRouteBindings($controller, 'show', $params);
+        $boundParams = $this->resolveRouteBindings($controller, $method, $params);
 
         app()->call([$controller, $method], $boundParams);
     }

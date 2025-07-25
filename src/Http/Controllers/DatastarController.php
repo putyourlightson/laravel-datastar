@@ -10,6 +10,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\App;
 use Putyourlightson\Datastar\DatastarEventStream;
 use Putyourlightson\Datastar\Models\Config;
+use Putyourlightson\Datastar\Services\Sse;
 use ReflectionMethod;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -22,7 +23,7 @@ class DatastarController extends Controller
      */
     public function index(): StreamedResponse
     {
-        return $this->getStreamedResponse(function() {
+        return app(Sse::class)->getStreamedResponse(function() {
             $hashedConfig = request()->input('config');
             $config = Config::fromHashed($hashedConfig);
             if ($config === null) {

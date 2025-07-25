@@ -7,19 +7,10 @@ namespace Putyourlightson\Datastar;
 
 use Putyourlightson\Datastar\Helpers\Request;
 use Putyourlightson\Datastar\Services\Sse;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 trait DatastarEventStream
 {
-    /**
-     * Returns a streamed response.
-     */
-    protected function getStreamedResponse(callable $callable): StreamedResponse
-    {
-        return app(Sse::class)->getStreamedResponse($callable);
-    }
-
     /**
      * Reads and returns the signals passed into the request.
      */

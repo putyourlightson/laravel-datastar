@@ -14,8 +14,8 @@ class Config
     private const HASH_ALGORITHM = 'sha256';
     private const HASH_LENGTH = 64;
 
-    public string $view = '';
-    public array $variables = [];
+    public string|array $route = '';
+    public array $params = [];
 
     /**
      * Creates a new instance from a hashed config string.
@@ -58,8 +58,8 @@ class Config
     public function getHashed(): string
     {
         $attributes = array_filter([
-            'view' => $this->view,
-            'variables' => $this->variables,
+            'route' => $this->route,
+            'params' => $this->params,
         ]);
         $encoded = json_encode($attributes);
 
@@ -74,12 +74,12 @@ class Config
     public function validate(): void
     {
         $validator = Validator::make([
-            'view' => $this->view,
-            'variables' => $this->variables,
+            'route' => $this->route,
+            'params' => $this->params,
         ], [
-            'view' => 'required|string',
-            'variables' => function(string $attribute, mixed $variables, Closure $fail) {
-                $this->validateVariables($attribute, $variables, $fail);
+            'route' => 'required',
+            'params' => function(string $attribute, mixed $params, Closure $fail) {
+                $this->validateParams($attribute, $params, $fail);
             },
         ]);
 
@@ -89,25 +89,25 @@ class Config
     }
 
     /**
-     * Validates that none of the variables are objects, recursively.
+     * Validates that none of the params are objects, recursively.
      */
-    private function validateVariables(string $attribute, mixed $variables, Closure $fail): void
+    private function validateParams(string $attribute, mixed $params, Closure $fail): void
     {
         $signalsVariableName = config('datastar.signalsVariableName');
 
-        foreach ($variables as $key => $value) {
+        foreach ($params as $key => $value) {
             if ($key === $signalsVariableName) {
-                $fail('Variable `' . $signalsVariableName . '` is reserved. Use a different name or modify the name of the signals variable using the `signalsVariableName` config setting.');
+                $fail('Param `' . $signalsVariableName . '` is reserved. Use a different name or modify the name of the signals variable using the `signalsVariableName` config setting.');
                 return;
             }
 
             if (is_object($value)) {
-                $fail('Variable `' . $key . '` is an object, which is a forbidden variable type in the context of a Datastar request.');
+                $fail('Param `' . $key . '` is an object, which is a forbidden param type in the context of a Datastar request.');
                 return;
             }
 
             if (is_array($value)) {
-                $this->validateVariables($attribute, $value, $fail);
+                $this->validateParams($attribute, $value, $fail);
             }
         }
     }

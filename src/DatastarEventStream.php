@@ -62,9 +62,9 @@ trait DatastarEventStream
     /**
      * Renders and returns Datastar view.
      */
-    protected function renderDatastarView(string $view, array $variables = []): string
+    protected function renderDatastarView(string $view, array $variables = []): void
     {
-        return app(Sse::class)->renderDatastarView($view, $variables);
+        app(Sse::class)->renderDatastarView($view, $variables);
     }
 
     /**

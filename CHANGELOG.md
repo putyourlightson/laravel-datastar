@@ -1,5 +1,11 @@
 # Release Notes for Datastar
 
+## 1.0.0-RC.3 - Unreleased
+
+- The package now includes Datastar [1.0.0-RC.3](https://github.com/starfederation/datastar/releases/tag/v1.0.0-RC.3).
+- Added the ability to set up backend actions to controller actions by passing an array `['MyController`, `myAction']` to the `datastar->get()` and other Blade directives.
+- Removed the `getStreamedResponse()` method from the `DatastarEventStream` trait. Use the Blade directives to create backend actions instead.
+
 ## 1.0.0-RC.2 - 2025-07-17
 
 - The package now includes Datastar [1.0.0-RC.2](https://github.com/starfederation/datastar/releases/tag/v1.0.0-RC.2).

@@ -88,34 +88,63 @@ When working with signals, note that you can convert a PHP array into a JSON obj
 
 ### Datastar Helper
 
-The `datastar()` helper function is available in Blade views and returns a `Datastar` helper that can be used to generate action requests to the Datastar controller. The Datastar controller renders a view containing one or [Blade directives](#blade-directives) that each send an SSE event. [Signals](#signals) are also sent as part of the request, and are made available in Datastar views using the `$signals` variable.
+The `datastar()` helper function is available in Blade views and returns a `Datastar` helper that can be used to generate action requests to the Datastar controller. The Datastar controller can either render a view _or_ run a controller action that sends zero or more SSE events. 
+
+[Signals](#signals) are also sent as part of the request, and are made available in Datastar views using the `$signals` variable.
 
 #### `datastar()->get()`
 
-Returns a `@get()` action request to render a view at the given path. The value can be a file path _or_ a dot-separated path to a Blade view.
+Returns a `@get()` action request to render a view or run a controller action. The value should be a can be a dot-separated path to a Blade view, _or_ an array with a controller class name as the first value and an action name as the second.
 
 ```php
+// Renders a Blade view
 {{ datastar()->get('path.to.view') }}
 ```
 
-Variables can be passed into the view using a second argument. Any variables passed in will become available in the rendered view. Variables are tamper-proof yet visible in the source code in plain text, so you should avoid passing in any sensitive data.
+```php
+// Runs a controller action
+{{ datastar()->get(['MyController', 'myAction']) }}
+```
+
+Params can be passed in as a second argument. Any params passed in will become available as variables in the rendered view, or as arguments to the controller action. Params are tamper-proof yet visible in the source code in plain text, so you should avoid passing in any sensitive data.
 
 ```php
+// Renders a Blade view
 {{ datastar()->get('path.to.view', ['offset' => 10]) }}
+```
+
+```php
+// Runs a controller action
+{{ datastar()->get(['MyController', 'myAction'], ['offset' => 10]) }}
 ```
 
 Options can be passed into the `@get()` action using a third argument. 
 
 ```php
+// Renders a Blade view
 {{ datastar()->get('path.to.view', ['offset' => 10], ['contentType' => 'form']) }}
 ```
+
+```php
+// Runs a controller action
+{{ datastar()->get(['MyController', 'myAction'], ['offset' => 10], ['contentType' => 'form']) }}
+```
+
+> {note}
+> Only primitive data types can be used as params: **strings**, **numbers**, **booleans** and **arrays**. Objects and models _cannot_ be used. Route-model binding works with controller actions.
 
 #### `datastar()->post()`
 
 Works the same as [`datastar()->get()`](#datastar-get) but returns a `@post()` action request to render a view at the given path. A CSRF token is automatically generated and sent along with the request.
 
 ```php
+// Renders a Blade view
 {{ datastar()->post('path.to.view') }}
+```
+
+```php
+// Runs a controller action
+{{ datastar()->post(['MyController', 'myAction']) }}
 ```
 
 #### `datastar()->put()`
@@ -123,7 +152,13 @@ Works the same as [`datastar()->get()`](#datastar-get) but returns a `@post()` a
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@put()` action request.
 
 ```php
+// Renders a Blade view
 {{ datastar()->put('path.to.view') }}
+```
+
+```php
+// Runs a controller action
+{{ datastar()->put(['MyController', 'myAction']) }}
 ```
 
 #### `datastar()->patch()`
@@ -131,7 +166,13 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@put()` 
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@patch()` action request.
 
 ```php
+// Renders a Blade view
 {{ datastar()->patch('path.to.view') }}
+```
+
+```php
+// Runs a controller action
+{{ datastar()->patch(['MyController', 'myAction']) }}
 ```
 
 #### `datastar()->delete()`
@@ -139,7 +180,13 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@patch()
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@delete()` action request.
 
 ```php
+// Renders a Blade view
 {{ datastar()->delete('path.to.view') }}
+```
+
+```php
+// Runs a controller action
+{{ datastar()->delete(['MyController', 'myAction']) }}
 ```
 
 ```html
@@ -148,91 +195,176 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@delete(
 
 ### Blade Directives
 
-#### `@patchelements`
+Datastar Blade directives can patch and remove elements, patch signals, execute JavaScript and redirect the browser.
 
-Patches elements into the DOM.
+#### Patch Elements
+
+The `@patchelements` directive allows you to [patch elements](https://data-star.dev/guide/getting_started#patching-elements) into the DOM.
 
 ```php
+{{-- main.blade.php -}}
+
+<div id="results"></div>
+
+<div id="search">
+    <button data-on-click="{{ datastar()->get('_partials/search') }}">
+        Search
+    </button>
+</div>
+```
+
+```php
+{{-- _partials/search.php -}}
+
 @patchelements
-    <div id="new">New element</div>
+    <div id="results">
+        ...
+    </div>
+@endpatchelements
+
+@patchelements
+    <div id="search">
+        Search complete!
+    </div>
 @endpatchelements
 ```
 
-#### `@removeelements`
+This will swap the elements with the IDs `results` and `search` into the DOM. Note that elements with those IDs **must** already exist in the DOM, unless a mode is specified (see below).
 
-Removes elements that match the provided selector from the DOM.
+##### Element Patch Options
 
-```php
-@removeelements('#old')
-```
-
-#### `@patchsignals`
-
-Patches signals into the frontend.
+Elements are patched into the DOM based on element IDs, by default. It’s possible to pass other modes and other [element patch options](https://data-star.dev/reference/sse_events#datastar-patch-elements) in as an argument.
 
 ```php
-@patchsignals(['foo' => 1, 'bar' => 2])
+@patchelements(['selector' => '#list', 'mode' => 'append'])
+    <li>A new list item</li>
+@endpatchelements
 ```
 
-#### `@executescript`
+##### Automatic Element Patching
 
-Executes JavaScript in the browser.
+Any elements output in a Datastar template (outside any `@patchelements` tags) will be automatically wrapped in a `@patchelements` directive. This makes it possible to write your views in a way that makes them more reusable.
+
+```php
+{{-- _partials/search.php -}}
+
+<div id="results"></div>
+```
+
+The view above is the equivalent of writing:
+
+```php
+{{-- _partials/search.php -}}
+
+@patchelements
+    <div id="results"></div>
+@endpatchelements
+```
+
+While automatic element patching is convenient, it is less explicit and more restrictive (since [element patch options](#element-patch-options) cannot be used), so should only be used when appropriate.
+
+#### Remove Elements
+
+Elements can be removed from the DOM using the `@removeelements` directive, which accepts a CSS selector.
+
+```php
+@removeelements('#list')
+```
+
+#### Patch Signals
+
+The `@patchsignals` directive allows you to [patch signals](https://data-star.dev/guide/reactive_signals#patching-signals) into the frontend signals.
+
+```php
+{{- Sets the value of the `username` signal. -}}
+@patchsignals(['username' => 'johnny'])
+
+{{- Sets multiple signal values using an array of key-value pairs. -}}
+@patchsignals(['username' => 'bobby', 'success' => true])
+
+{{- Removes the `username` signal by setting it to `null`. -}}
+@patchsignals(['username' => null])
+```
+
+> {note}
+> Signals patches **cannot** be wrapped in `@patchelements` directives, since each patch creates a server-sent event which will conflict with the element’s contents.
+
+#### Signal Patch Options
+
+It’s possible to pass [signal patch options](https://data-star.dev/reference/sse_events#datastar-patch-signals) in as a second argument.
+
+```php
+@patchsignals(['username' => 'johnny'], ['onlyIfMissing' => true])
+```
+
+### Executing JavaScript
+
+The `@executescript` directive allows you to send JavaScript to the browser to be executed on the front-end.
 
 ```php
 @executescript
-    alert('Hello, world!');
+    alert('Username is valid');
 @endexecutescript
 ```
 
-#### `@location`
+#### Execute Script Options
 
-Redirects the browser by setting the location to the provided URI.
+It’s possible to pass execute script options in as an argument. They are applied to the `<script>` tag that is appended to the DOM.
+
+```php
+@executescript(['autoRemove' => true, 'attributes' => ['defer' => true]])
+    alert('Username is valid');
+@endexecutescript
+```
+
+### Redirecting
+
+The `@location` directive allows you to redirect the page by updating `window.location` on the front-end.
 
 ```php
 @location('/guide')
 ```
 
-### Using Controllers
+#### Location Options
 
-You can send SSE events using your own controller _instead_ of the Datastar controller by using the `DatastarEventStream` trait. Return the `getStreamedResponse()` method, passing a callable into it that sends zero or more SSE events using methods provided.
+It’s possible to pass location options in as a second argument. They are applied to the `<script>` tag that is appended to the DOM.
 
 ```php
-// routes/web.php
-
-use App\Http\Controllers\MyController;
-
-Route::resource('/my-controller', MyController::class);
+@location('/guide', ['autoRemove' => true, 'attributes' => ['defer' => true]])
 ```
+
+### Using Controllers
+
+You can send SSE events from your own controller using the `DatastarEventStream` trait. No routes are required, as Datastar will handle routing to the controller action you specify when using the [Datastar helper](#datastar-helper).
 
 ```php
 namespace App\Http\Controllers;
 
 use Illuminate\Routing\Controller;
 use Putyourlightson\Datastar\DatastarEventStream;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MyController extends Controller
 {
     use DatastarEventStream;
 
-    public function index(): StreamedResponse
+    public function index(): void
     {
-        return $this->getStreamedResponse(function() {
-            $signals = $this->readSignals();
-            $this->patchSignals(['enabled' => $signals['enabled'] ? false : true]);
-            $this->patchElements('
-                <span id="button-text">' . ($signals['enabled'] ? 'Enable' : 'Disable') . '</span>
-            ');
-        });
+        $signals = $this->readSignals();
+        $this->patchSignals(['enabled' => $signals['enabled'] ? false : true]);
+        $this->patchElements('
+            <span id="button-text">' . ($signals['enabled'] ? 'Enable' : 'Disable') . '</span>
+        ');
     }
 }
 ```
 
 ### DatastarEventStream Trait
 
+The `DatastarEventStream` trait provides methods to patch elements, patch signals, execute scripts, redirect the browser and render Datastar views.
+
 #### `patchElements()`
 
-Patches elements into the DOM.
+Patches elements into the DOM. Accepts [element patch options](#element-patch-options) as an optional second argument.
 
 ```php
 $this->patchElements('<div id="new-element">New element</div>');
@@ -243,12 +375,12 @@ $this->patchElements('<div id="new-element">New element</div>');
 Removes elements that match the provided selector from the DOM.
 
 ```php
-$this->removeElements('#old-element');
+$this->removeElements('#list');
 ```
 
 #### `patchSignals()`
 
-Patches signals into the frontend.
+Patches signals into the frontend. Accepts [signal patch options](#signal-patch-options) as an optional second argument.
 
 ```php
 $this->patchSignals(['foo' => 1, 'bar' => 2]);
@@ -256,7 +388,7 @@ $this->patchSignals(['foo' => 1, 'bar' => 2]);
 
 #### `executeScript()`
 
-Executes JavaScript in the browser.
+Executes JavaScript in the browser. Accepts [execute script options](#execute-script-options) as an optional second argument, which are applied to the `<script>` tag that is appended to the DOM.
 
 ```php
 $this->executeScript('alert("Hello, world!")');
@@ -264,7 +396,7 @@ $this->executeScript('alert("Hello, world!")');
 
 #### `location()`
 
-Redirects the browser by setting the location to the provided URI.
+Redirects the browser by setting the location to the provided URI. Accepts [location options](#location-options) as an optional second argument, which are applied to the `<script>` tag that is appended to the DOM.
 
 ```php
 $this->location('/guide');
@@ -272,7 +404,7 @@ $this->location('/guide');
 
 #### `renderDatastarView()`
 
-Renders a Datastar view.
+Renders a Datastar view. Accepts the view path as the first argument and an optional array of variables as the second argument. The Blade view should contain Datastar directives.
 
 ```php
 $this->renderDatastarView('datastar.toggle', ['enabled' => true]);

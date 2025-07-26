@@ -135,7 +135,7 @@ class Sse
     /**
      * Returns a rendered Datastar view.
      */
-    public function renderDatastarView(string $view, array $variables = []): string
+    public function renderDatastarView(string $view, array $variables = [], bool $sendSseEvents = true): void
     {
         if (!View::exists($view)) {
             $this->throwException('View `' . $view . '` does not exist.');
@@ -146,6 +146,9 @@ class Sse
             [config('datastar.signalsVariableName', 'signals') => $signals],
             $variables,
         );
+
+        $originalSendSseEvents = $this->sendSseEvents;
+        $this->sendSseEvents = $sendSseEvents;
 
         if (strtolower(request()->header('Content-Type')) === 'application/json') {
             // Clear out params to prevent them from being processed by controller actions.
@@ -159,7 +162,11 @@ class Sse
             $this->throwException($exception);
         }
 
-        return $output;
+        if (trim($output) !== '') {
+            $this->patchElements($output, [], $sendSseEvents);
+        }
+
+        $this->sendSseEvents = $originalSendSseEvents;
     }
 
     /**

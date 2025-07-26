@@ -338,6 +338,11 @@ It’s possible to pass location options in as a second argument. They are appli
 You can send SSE events from your own controller using the `DatastarEventStream` trait. No routes are required, as Datastar will handle routing to the controller action you specify when using the [Datastar helper](#datastar-helper).
 
 ```php
+// Runs a controller action
+{{ datastar()->get(['MyController', 'view']) }}
+```
+
+```php
 namespace App\Http\Controllers;
 
 use Illuminate\Routing\Controller;
@@ -354,6 +359,11 @@ class MyController extends Controller
         $this->patchElements('
             <span id="button-text">' . ($signals['enabled'] ? 'Enable' : 'Disable') . '</span>
         ');
+    }
+    
+    public function view(): void
+    {
+        $this->renderDatastarView('path.to.view');
     }
 }
 ```

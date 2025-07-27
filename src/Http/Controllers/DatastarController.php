@@ -49,7 +49,7 @@ class DatastarController extends Controller
             throw new BadRequestHttpException("Controller `$controllerName` does not exist. Make sure you’re using a valid namespace and that the class is autoloaded.");
         }
 
-        $method = $route[1] ?? 'index';
+        $method = $config->route[1] ?? 'index';
         $controller = app($controllerName);
         if (!method_exists($controller, $method)) {
             throw new BadRequestHttpException("Method `$method` does not exist on controller `$controllerName`.");

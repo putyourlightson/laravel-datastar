@@ -23,7 +23,7 @@ class DatastarController extends Controller
      */
     public function index(): StreamedResponse
     {
-        return app(Sse::class)->getStreamedResponse(function() {
+        return $this->getStreamedResponse(function() {
             $hashedConfig = request()->input('config');
             $config = Config::fromHashed($hashedConfig);
             if ($config === null) {

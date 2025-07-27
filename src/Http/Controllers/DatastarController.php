@@ -10,9 +10,9 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\App;
 use Putyourlightson\Datastar\DatastarEventStream;
 use Putyourlightson\Datastar\Models\Config;
-use Putyourlightson\Datastar\Services\Sse;
 use ReflectionMethod;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class DatastarController extends Controller
 {
@@ -21,34 +21,24 @@ class DatastarController extends Controller
     /**
      * Default controller action.
      */
-    public function index(): StreamedResponse
-    {
-        return $this->getStreamedResponse(function() {
-            $hashedConfig = request()->input('config');
-            $config = Config::fromHashed($hashedConfig);
-            if ($config === null) {
-                $this->throwException('Submitted data was tampered.');
-            }
+    public function index(): Response
+{
+        $hashedConfig = request()->input('config');
+        $config = Config::fromHashed($hashedConfig);
+        if ($config === null) {
+            throw new BadRequestHttpException('Submitted data was tampered.');
+        }
 
-            $this->processRoute($config->route, $config->params);
-        });
-    }
-
-    /**
-     * Processes a route.
-     */
-    protected function processRoute(string|array $route, array $params = []): void
-    {
-        if (is_string($route)) {
-            $this->renderDatastarView($route, $params);
-
-            return;
+        if (is_string($config->route)) {
+            return $this->getStreamedResponse(function() use ($config) {
+                $this->renderDatastarView($config->route, $config->params);
+            });
         }
 
         /** @var string|object|null $controllerName */
-        $controllerName = $route[0] ?? null;
+        $controllerName = $config->route[0] ?? null;
         if (empty($controllerName)) {
-            $this->throwException('A controller must be specified in the route.');
+            throw new BadRequestHttpException('A controller must be specified in the route.');
         }
 
         if (!str_contains($controllerName, '\\')) {
@@ -56,18 +46,18 @@ class DatastarController extends Controller
         }
 
         if (!class_exists($controllerName)) {
-            $this->throwException("Controller `$controllerName` does not exist. Make sure you’re using a valid namespace and that the class is autoloaded.");
+            throw new BadRequestHttpException("Controller `$controllerName` does not exist. Make sure you’re using a valid namespace and that the class is autoloaded.");
         }
 
         $method = $route[1] ?? 'index';
         $controller = app($controllerName);
         if (!method_exists($controller, $method)) {
-            $this->throwException("Method `$method` does not exist on controller `$controllerName`.");
+            throw new BadRequestHttpException("Method `$method` does not exist on controller `$controllerName`.");
         }
 
-        $boundParams = $this->resolveRouteBindings($controller, $method, $params);
+        $boundParams = $this->resolveRouteBindings($controller, $method, $config->params);
 
-        app()->call([$controller, $method], $boundParams);
+        return app()->call([$controller, $method], $boundParams);
     }
 
     /**

@@ -8,7 +8,7 @@
 ### A reactive hypermedia framework for Laravel.
 
 > [!WARNING]
-> Updating from the beta? View the [release notes](https://github.com/putyourlightson/laravel-datastar/blob/develop/CHANGELOG.md).
+> Updating from a previous version? View the [release notes](https://github.com/putyourlightson/laravel-datastar/blob/develop/CHANGELOG.md).
 
 This package integrates the [Datastar hypermedia framework](https://data-star.dev/) with [Laravel](https://laravel.com/), allowing you to create reactive frontends driven by Blade views _or_ controllers. It aims to replace the need for front-end frameworks such as React, Vue.js and Alpine.js + htmx, and instead lets you manage state and use logic from your Laravel backend.
 
@@ -44,7 +44,9 @@ The Datastar package for Laravel allows you to handle backend requests by sendin
 
 Here’s a trivial example that toggles some backend state using the Blade view `datastar/toggle.blade.php` to handle the request.
 
-```html
+```php
+{{-- main.blade.php --}}
+
 <div data-signals-enabled="false">
     <div data-text="$enabled ? 'ON' : 'OFF'"></div>
     <button data-on-click="{{ datastar()->get('datastar.toggle') }}">
@@ -79,6 +81,8 @@ Start by reading the [Getting Started](https://data-star.dev/guide/getting_start
 When working with signals, note that you can convert a PHP array into a JSON object using the `json_encode` function.
 
 ```php
+{{-- main.blade.php --}}
+
 @php
     $signals = ['foo' => 1, 'bar' => 2];
 @endphp
@@ -94,39 +98,38 @@ The `datastar()` helper function is available in Blade views and returns a `Data
 
 #### `datastar()->get()`
 
-Returns a `@get()` action request to render a view or run a controller action. The value should be a can be a dot-separated path to a Blade view, _or_ an array with a controller class name as the first value and an action name as the second.
+Returns a `@get()` action request to render a view or run a controller action. The value can be a dot-separated path to a Blade view, _or_ an array with a controller class name as the first value and an action name as the second.
 
 ```php
-// Renders a Blade view
+// Sends a `GET` request that renders a Blade view
 {{ datastar()->get('path.to.view') }}
 ```
 
 ```php
-// Runs a controller action
+// Sends a `GET` request that runs a controller action
 {{ datastar()->get(['MyController', 'myAction']) }}
 ```
 
-Params can be passed in as a second argument. Any params passed in will become available as variables in the rendered view, or as arguments to the controller action. Params are tamper-proof yet visible in the source code in plain text, so you should avoid passing in any sensitive data.
+Params can be passed in as a second argument. Any params passed in will become available as variables in the rendered view, or as arguments to the controller action. 
+
+> {warning}
+> Params are tamper-proof yet visible in the source code in plain text, so you should avoid passing in any sensitive data.
 
 ```php
-// Renders a Blade view
 {{ datastar()->get('path.to.view', ['offset' => 10]) }}
 ```
 
 ```php
-// Runs a controller action
 {{ datastar()->get(['MyController', 'myAction'], ['offset' => 10]) }}
 ```
 
 Options can be passed into the `@get()` action using a third argument. 
 
 ```php
-// Renders a Blade view
 {{ datastar()->get('path.to.view', ['offset' => 10], ['contentType' => 'form']) }}
 ```
 
 ```php
-// Runs a controller action
 {{ datastar()->get(['MyController', 'myAction'], ['offset' => 10], ['contentType' => 'form']) }}
 ```
 
@@ -138,12 +141,12 @@ Options can be passed into the `@get()` action using a third argument.
 Works the same as [`datastar()->get()`](#datastar-get) but returns a `@post()` action request to render a view at the given path. A CSRF token is automatically generated and sent along with the request.
 
 ```php
-// Renders a Blade view
+// Sends a `POST` request that renders a Blade view
 {{ datastar()->post('path.to.view') }}
 ```
 
 ```php
-// Runs a controller action
+// Sends a `POST` request that runs a controller action
 {{ datastar()->post(['MyController', 'myAction']) }}
 ```
 
@@ -152,12 +155,12 @@ Works the same as [`datastar()->get()`](#datastar-get) but returns a `@post()` a
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@put()` action request.
 
 ```php
-// Renders a Blade view
+// Sends a `PUT` request that renders a Blade view
 {{ datastar()->put('path.to.view') }}
 ```
 
 ```php
-// Runs a controller action
+// Sends a `PUT` request that runs a controller action
 {{ datastar()->put(['MyController', 'myAction']) }}
 ```
 
@@ -166,12 +169,12 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@put()` 
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@patch()` action request.
 
 ```php
-// Renders a Blade view
+// Sends a `PATCH` request that renders a Blade view
 {{ datastar()->patch('path.to.view') }}
 ```
 
 ```php
-// Runs a controller action
+// Sends a `PATCH` request that runs a controller action
 {{ datastar()->patch(['MyController', 'myAction']) }}
 ```
 
@@ -180,17 +183,13 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@patch()
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@delete()` action request.
 
 ```php
-// Renders a Blade view
+// Sends a `DELETE` request that renders a Blade view
 {{ datastar()->delete('path.to.view') }}
 ```
 
 ```php
-// Runs a controller action
+// Sends a `DELETE` request that runs a controller action
 {{ datastar()->delete(['MyController', 'myAction']) }}
-```
-
-```html
-<div id="swap">The view should contain one or more elements to be patched.</div> 
 ```
 
 ### Blade Directives
@@ -207,14 +206,14 @@ The `@patchelements` directive allows you to [patch elements](https://data-star.
 <div id="results"></div>
 
 <div id="search">
-    <button data-on-click="{{ datastar()->get('_partials/search') }}">
+    <button data-on-click="{{ datastar()->get('datastar.search') }}">
         Search
     </button>
 </div>
 ```
 
 ```php
-{{-- _partials/search.php -}}
+{{-- datastar/search.blade.php -}}
 
 @patchelements
     <div id="results">
@@ -246,7 +245,7 @@ Elements are patched into the DOM based on element IDs, by default. It’s possi
 Any elements output in a Datastar template (outside any `@patchelements` tags) will be automatically wrapped in a `@patchelements` directive. This makes it possible to write your views in a way that makes them more reusable.
 
 ```php
-{{-- _partials/search.php -}}
+{{-- datastar/search.blade.php -}}
 
 <div id="results"></div>
 ```
@@ -254,7 +253,7 @@ Any elements output in a Datastar template (outside any `@patchelements` tags) w
 The view above is the equivalent of writing:
 
 ```php
-{{-- _partials/search.php -}}
+{{-- datastar/search.blade.php -}}
 
 @patchelements
     <div id="results"></div>
@@ -338,7 +337,9 @@ It’s possible to pass location options in as a second argument. They are appli
 You can send SSE events from your own controller using the `DatastarEventStream` trait. No routes are required, as Datastar will handle routing to the controller action you specify when using the [Datastar helper](#datastar-helper).
 
 ```php
-// Runs a controller action
+{{-- main.blade.php --}}
+
+// Sends a `GET` request that runs a controller action
 {{ datastar()->get(['MyController', 'view']) }}
 ```
 
@@ -414,7 +415,7 @@ $this->location('/guide');
 
 #### `renderDatastarView()`
 
-Renders a Datastar view. Accepts the view path as the first argument and an optional array of variables as the second argument. The Blade view should contain Datastar directives.
+Renders a Datastar view. Accepts the view path as the first argument and an optional array of variables as the second argument. The Blade view should output Datastar directives.
 
 ```php
 $this->renderDatastarView('datastar.toggle', ['enabled' => true]);

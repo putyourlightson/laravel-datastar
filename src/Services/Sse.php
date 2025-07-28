@@ -60,9 +60,9 @@ class Sse
     }
 
     /**
-     * Sends an event stream.
+     * Returns a streamed response that sends an event stream.
      */
-    public function sendEventStream(): void
+    public function getEventStream(): void
     {
         $this->getStreamedResponse(function() {
             echo $this->responseData;

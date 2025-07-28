@@ -21,11 +21,11 @@ trait DatastarEventStream
     }
 
     /**
-     * Sends an event stream.
+     * Returns a streamed response that sends an event stream.
      */
-    protected function sendEventStream(): void
+    protected function getEventStream(): void
     {
-        app(Sse::class)->sendEventStream();
+        app(Sse::class)->getEventStream();
     }
 
     /**

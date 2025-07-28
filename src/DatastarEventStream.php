@@ -31,41 +31,41 @@ trait DatastarEventStream
     /**
      * Patches elements into the DOM.
      */
-    protected function patchElements(string $data, array $options = []): void
+    protected function patchElements(string $data, array $options = [], bool $shouldSend = true): void
     {
-        app(Sse::class)->patchElements($data, $options);
+        app(Sse::class)->patchElements($data, $options, $shouldSend);
     }
 
     /**
      * Removes elements from the DOM.
      */
-    protected function removeElements(string $selector, array $options = []): void
+    protected function removeElements(string $selector, array $options = [], bool $shouldSend = true): void
     {
-        app(Sse::class)->removeElements($selector, $options);
+        app(Sse::class)->removeElements($selector, $options, $shouldSend);
     }
 
     /**
      * Patches signals.
      */
-    protected function patchSignals(array $signals, array $options = []): void
+    protected function patchSignals(array $signals, array $options = [], bool $shouldSend = true): void
     {
-        app(Sse::class)->patchSignals($signals, $options);
+        app(Sse::class)->patchSignals($signals, $options, $shouldSend);
     }
 
     /**
      * Executes JavaScript in the browser.
      */
-    protected function executeScript(string $script, array $options = []): void
+    protected function executeScript(string $script, array $options = [], bool $shouldSend = true): void
     {
-        app(Sse::class)->executeScript($script, $options);
+        app(Sse::class)->executeScript($script, $options, $shouldSend);
     }
 
     /**
      * Redirects the browser by setting the location to the provided URI.
      */
-    protected function location(string $uri, array $options = []): void
+    protected function location(string $uri, array $options = [], bool $shouldSend = true): void
     {
-        app(Sse::class)->location($uri, $options);
+        app(Sse::class)->location($uri, $options, $shouldSend);
     }
 
     /**

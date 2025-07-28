@@ -5,6 +5,8 @@
 
 namespace Putyourlightson\Datastar\Helpers;
 
+use Putyourlightson\Datastar\Services\Sse;
+
 class Datastar
 {
     /**
@@ -53,5 +55,13 @@ class Datastar
     public function readSignals(): array
     {
         return Request::readSignals();
+    }
+
+    /**
+     * Sets server sent event options.
+     */
+    public function setSseEventOptions(array $options = []): void
+    {
+        app(Sse::class)->setSseEventOptions($options);
     }
 }

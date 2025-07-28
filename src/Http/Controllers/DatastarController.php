@@ -5,12 +5,14 @@
 
 namespace Putyourlightson\Datastar\Http\Controllers;
 
+use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\App;
 use Putyourlightson\Datastar\DatastarEventStream;
 use Putyourlightson\Datastar\Models\Config;
 use ReflectionMethod;
+use ReflectionNamedType;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -21,8 +23,8 @@ class DatastarController extends Controller
     /**
      * Default controller action.
      */
-    public function index(): Response
-{
+    public function index(): ?Response
+    {
         $hashedConfig = request()->input('config');
         $config = Config::fromHashed($hashedConfig);
         if ($config === null) {
@@ -30,6 +32,8 @@ class DatastarController extends Controller
         }
 
         if (is_string($config->route)) {
+            $this->shouldSendSseEvents();
+
             return $this->getStreamedResponse(function() use ($config) {
                 $this->renderDatastarView($config->route, $config->params);
             });
@@ -72,14 +76,17 @@ class DatastarController extends Controller
             $name = $param->getName();
             $type = $param->getType();
 
-            if (!$type || $type->isBuiltin()) {
+            if (!($type instanceof ReflectionNamedType) || $type->isBuiltin()) {
                 $resolved[$name] = $rawParams[$name] ?? null;
                 continue;
             }
 
             $className = $type->getName();
+
             if (is_subclass_of($className, Model::class) && isset($rawParams[$name])) {
-                $resolved[$name] = $className::findOrFail($rawParams[$name]);
+                /** @var UrlRoutable $instance */
+                $instance = App::make($className);
+                $resolved[$name] = $instance->resolveRouteBinding($rawParams[$name]);
             } else {
                 $resolved[$name] = $rawParams[$name] ?? App::make($className);
             }

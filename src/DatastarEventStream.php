@@ -21,6 +21,22 @@ trait DatastarEventStream
     }
 
     /**
+     * Sends an event stream.
+     */
+    protected function sendEventStream(): void
+    {
+        app(Sse::class)->sendEventStream();
+    }
+
+    /**
+     * Sets whether SSE events should be sent when processed.
+     */
+    protected function shouldSendSseEvents(bool $value = true): void
+    {
+        app(Sse::class)->shouldSendSseEvents($value);
+    }
+
+    /**
      * Reads and returns the signals passed into the request.
      */
     protected function readSignals(): array
@@ -31,41 +47,41 @@ trait DatastarEventStream
     /**
      * Patches elements into the DOM.
      */
-    protected function patchElements(string $data, array $options = [], bool $shouldSend = true): void
+    protected function patchElements(string $data, array $options = []): void
     {
-        app(Sse::class)->patchElements($data, $options, $shouldSend);
+        app(Sse::class)->patchElements($data, $options);
     }
 
     /**
      * Removes elements from the DOM.
      */
-    protected function removeElements(string $selector, array $options = [], bool $shouldSend = true): void
+    protected function removeElements(string $selector, array $options = []): void
     {
-        app(Sse::class)->removeElements($selector, $options, $shouldSend);
+        app(Sse::class)->removeElements($selector, $options);
     }
 
     /**
      * Patches signals.
      */
-    protected function patchSignals(array $signals, array $options = [], bool $shouldSend = true): void
+    protected function patchSignals(array $signals, array $options = []): void
     {
-        app(Sse::class)->patchSignals($signals, $options, $shouldSend);
+        app(Sse::class)->patchSignals($signals, $options);
     }
 
     /**
      * Executes JavaScript in the browser.
      */
-    protected function executeScript(string $script, array $options = [], bool $shouldSend = true): void
+    protected function executeScript(string $script, array $options = []): void
     {
-        app(Sse::class)->executeScript($script, $options, $shouldSend);
+        app(Sse::class)->executeScript($script, $options);
     }
 
     /**
      * Redirects the browser by setting the location to the provided URI.
      */
-    protected function location(string $uri, array $options = [], bool $shouldSend = true): void
+    protected function location(string $uri, array $options = []): void
     {
-        app(Sse::class)->location($uri, $options, $shouldSend);
+        app(Sse::class)->location($uri, $options);
     }
 
     /**

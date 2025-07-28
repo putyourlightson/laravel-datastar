@@ -26,9 +26,9 @@ class Sse
     private string $responseData = '';
 
     /**
-     * Whether to send SSE events when processing them.
+     * Whether SSE events should be sent when processed.
      */
-    private bool $shouldSendSseEvents = true;
+    private bool $shouldSendSseEvents = false;
 
     /**
      * Server sent event options to send.
@@ -60,6 +60,24 @@ class Sse
     }
 
     /**
+     * Sends an event stream.
+     */
+    public function sendEventStream(): void
+    {
+        $this->getStreamedResponse(function() {
+            echo $this->responseData;
+        });
+    }
+
+    /**
+     * Sets whether SSE events should be sent when processed.
+     */
+    public function shouldSendSseEvents(bool $value = true): void
+    {
+        $this->shouldSendSseEvents = $value;
+    }
+
+    /**
      * Reads and returns the signals passed into the request.
      */
     public function readSignals(): array
@@ -70,7 +88,7 @@ class Sse
     /**
      * Patches elements into the DOM.
      */
-    public function patchElements(string $data, array $options = [], bool $shouldSend = true): void
+    public function patchElements(string $data, array $options = []): void
     {
         $options = $this->patchEventOptions(
             config('datastar.defaultElementOptions', []),
@@ -79,13 +97,13 @@ class Sse
         );
         $event = new PatchElements($data, $options);
 
-        $this->processEvent($event, $shouldSend);
+        $this->processEvent($event);
     }
 
     /**
      * Removes elements from the DOM.
      */
-    public function removeElements(string $selector, array $options = [], bool $shouldSend = true): void
+    public function removeElements(string $selector, array $options = []): void
     {
         $options = $this->patchEventOptions(
             config('datastar.defaultElementOptions', []),
@@ -94,13 +112,13 @@ class Sse
         );
         $event = new RemoveElements($selector, $options);
 
-        $this->processEvent($event, $shouldSend);
+        $this->processEvent($event);
     }
 
     /**
      * Patches signals.
      */
-    public function patchSignals(array $signals, array $options = [], bool $shouldSend = true): void
+    public function patchSignals(array $signals, array $options = []): void
     {
         $options = $this->patchEventOptions(
             config('datastar.defaultSignalOptions', []),
@@ -109,13 +127,13 @@ class Sse
         );
         $event = new PatchSignals($signals, $options);
 
-        $this->processEvent($event, $shouldSend);
+        $this->processEvent($event);
     }
 
     /**
      * Executes JavaScript in the browser.
      */
-    public function executeScript(string $script, array $options = [], bool $shouldSend = true): void
+    public function executeScript(string $script, array $options = []): void
     {
         $options = $this->patchEventOptions(
             config('datastar.defaultExecuteScriptOptions', []),
@@ -124,13 +142,13 @@ class Sse
         );
         $event = new ExecuteScript($script, $options);
 
-        $this->processEvent($event, $shouldSend);
+        $this->processEvent($event);
     }
 
     /**
      * Redirects the browser by setting the location to the provided URI.
      */
-    public function location(string $uri, array $options = [], bool $shouldSend = true): void
+    public function location(string $uri, array $options = []): void
     {
         $options = $this->patchEventOptions(
             config('datastar.defaultExecuteScriptOptions', []),
@@ -139,13 +157,13 @@ class Sse
         );
         $event = new Location($uri, $options);
 
-        $this->processEvent($event, $shouldSend);
+        $this->processEvent($event);
     }
 
     /**
      * Returns a rendered Datastar view.
      */
-    public function renderDatastarView(string $view, array $variables = [], bool $shouldSendSseEvents = true): void
+    public function renderDatastarView(string $view, array $variables = []): void
     {
         if (!View::exists($view)) {
             $this->throwException('View `' . $view . '` does not exist.');
@@ -156,9 +174,6 @@ class Sse
             [config('datastar.signalsVariableName', 'signals') => $signals],
             $variables,
         );
-
-        $originalSendSseEvents = $this->shouldSendSseEvents;
-        $this->shouldSendSseEvents = $shouldSendSseEvents;
 
         if (strtolower(request()->header('Content-Type')) === 'application/json') {
             // Clear out params to prevent them from being processed by controller actions.
@@ -173,10 +188,8 @@ class Sse
         }
 
         if (trim($output) !== '') {
-            $this->patchElements($output, [], $shouldSendSseEvents);
+            $this->patchElements($output);
         }
-
-        $this->shouldSendSseEvents = $originalSendSseEvents;
     }
 
     /**
@@ -234,13 +247,11 @@ class Sse
     /**
      * Processes an event.
      */
-    private function processEvent(EventInterface $event, bool $shouldSend): void
+    private function processEvent(EventInterface $event): void
     {
         $this->verifySseMethodInProcess($event);
 
-        $shouldSend = $this->shouldSendSseEvents && $shouldSend;
-
-        if ($shouldSend) {
+        if ($this->shouldSendSseEvents) {
             // Clean and end all existing output buffers.
             while (ob_get_level() > 0) {
                 ob_end_clean();
@@ -249,7 +260,7 @@ class Sse
 
         $output = $event->getOutput();
 
-        if ($shouldSend) {
+        if ($this->shouldSendSseEvents) {
             echo $output;
 
             if (ob_get_contents()) {
@@ -261,7 +272,7 @@ class Sse
         // Append the resulting output to the response data.
         $this->responseData .= $output;
 
-        if ($shouldSend) {
+        if ($this->shouldSendSseEvents) {
             // Start a new output buffer to capture any subsequent inline content.
             ob_start();
         }

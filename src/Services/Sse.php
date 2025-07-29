@@ -48,29 +48,19 @@ class Sse
     private array|null $sseOptionsInProcess = [];
 
     /**
-     * Returns a streamed response.
+     * Returns an event stream.
      */
-    public function getStreamedResponse(callable $callable): StreamedResponse
+    public function getEventStream(?callable $callable = null): StreamedResponse
     {
+        // Abort the process if the client closes the connection.
+        ignore_user_abort(false);
+
         $this->isStreamedResponse = true;
 
-        $response = new StreamedResponse($callable);
-
-        foreach (ServerSentEventGenerator::headers() as $name => $value) {
-            $response->headers->set($name, $value);
-        }
-
-        return $response;
-    }
-
-    /**
-     * Returns a streamed response that sends an event stream.
-     */
-    public function getEventStream(): StreamedResponse
-    {
-        return $this->getStreamedResponse(function() {
+        return new StreamedResponse(function() use ($callable) {
             echo $this->getEventOutput();
-        });
+            $callable();
+        }, 200, ServerSentEventGenerator::headers());
     }
 
     /**
@@ -84,14 +74,6 @@ class Sse
         }
 
         return $data;
-    }
-
-    /**
-     * Reads and returns the signals passed into the request.
-     */
-    public function readSignals(): array
-    {
-        return Request::readSignals();
     }
 
     /**
@@ -178,7 +160,7 @@ class Sse
             $this->throwException('View `' . $view . '` does not exist.');
         }
 
-        $signals = $this->readSignals();
+        $signals = Request::readSignals();
         $variables = array_merge(
             [config('datastar.signalsVariableName', 'signals') => $signals],
             $variables,

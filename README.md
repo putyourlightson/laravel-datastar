@@ -347,27 +347,33 @@ You can send SSE events from your own controller using the `DatastarEventStream`
 namespace App\Http\Controllers;
 
 use Illuminate\Routing\Controller;
-use Putyourlightson\Datastar\DatastarEventStream;
+use Putyourlightson\Datastar\DatastarEventStream;use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MyController extends Controller
 {
     use DatastarEventStream;
 
-    public function index(): void
+    public function index(): StreamedResponse
     {
         $signals = $this->readSignals();
         $this->patchSignals(['enabled' => $signals['enabled'] ? false : true]);
         $this->patchElements('
             <span id="button-text">' . ($signals['enabled'] ? 'Enable' : 'Disable') . '</span>
         ');
+        
+        return $this->getEventStream();
     }
     
-    public function view(): void
+    public function view(): StreamedResponse
     {
         $this->renderDatastarView('path.to.view');
+        
+        return $this->getEventStream();
     }
 }
 ```
+
+Controller actions _must_ return a `StreamedResponse` created using the `getEventStream()` method.
 
 ### DatastarEventStream Trait
 

@@ -57,10 +57,17 @@ class Sse
 
         $this->isStreamedResponse = true;
 
-        return new StreamedResponse(function() use ($callable) {
+        $eventStream = function() use ($callable) {
             echo $this->getEventOutput();
-            $callable();
-        }, 200, ServerSentEventGenerator::headers());
+            ob_flush();
+            flush();
+
+            if (is_callable($callable)) {
+                $callable();
+            }
+        };
+
+        return new StreamedResponse($eventStream, 200, ServerSentEventGenerator::headers());
     }
 
     /**

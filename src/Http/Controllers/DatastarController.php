@@ -9,6 +9,7 @@ use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\View;
 use Putyourlightson\Datastar\DatastarEventStream;
 use Putyourlightson\Datastar\Models\Config;
 use ReflectionMethod;
@@ -31,16 +32,24 @@ class DatastarController extends Controller
             throw new BadRequestHttpException('Submitted data was tampered.');
         }
 
-        if (is_string($config->route)) {
-            return $this->getStreamedResponse(function() use ($config) {
-                $this->renderDatastarView($config->route, $config->params);
-            });
-        }
+        $controllerName = $config->route;
+        $method = '__invoke';
 
-        /** @var string|object|null $controllerName */
-        $controllerName = $config->route[0] ?? null;
-        if (empty($controllerName)) {
-            throw new BadRequestHttpException('A controller must be specified in the route.');
+        if (is_string($config->route)) {
+            if (View::exists($config->route)) {
+                return $this->getEventStream(function() use ($config) {
+                    $this->renderDatastarView($config->route, $config->params);
+                });
+            }
+        } else {
+            $controllerName = $config->route[0] ?? null;
+            if (empty($controllerName)) {
+                throw new BadRequestHttpException('A controller must be specified in the route.');
+            }
+            $method = $config->route[1] ?? null;
+            if (empty($method)) {
+                throw new BadRequestHttpException('A controller and method must be specified in the route.');
+            }
         }
 
         if (!str_contains($controllerName, '\\')) {
@@ -51,7 +60,6 @@ class DatastarController extends Controller
             throw new BadRequestHttpException("Controller `$controllerName` does not exist. Make sure you’re using a valid namespace and that the class is autoloaded.");
         }
 
-        $method = $config->route[1] ?? 'index';
         $controller = app($controllerName);
         if (!method_exists($controller, $method)) {
             throw new BadRequestHttpException("Method `$method` does not exist on controller `$controllerName`.");

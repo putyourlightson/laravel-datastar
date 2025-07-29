@@ -14,7 +14,7 @@ class Datastar
      */
     public function view(string $path, array $params = [], array $options = []): string
     {
-        return Action::getAction('get', 'view:' . $path, $params, $options);
+        return $this->get('view:' . $path, $params, $options);
     }
 
     /**

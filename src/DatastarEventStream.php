@@ -39,49 +39,61 @@ trait DatastarEventStream
     /**
      * Patches elements into the DOM.
      */
-    protected function patchElements(string $data, array $options = []): void
+    protected function patchElements(string $data, array $options = []): static
     {
         app(Sse::class)->patchElements($data, $options);
+
+        return $this;
     }
 
     /**
      * Removes elements from the DOM.
      */
-    protected function removeElements(string $selector, array $options = []): void
+    protected function removeElements(string $selector, array $options = []): static
     {
         app(Sse::class)->removeElements($selector, $options);
+
+        return $this;
     }
 
     /**
      * Patches signals.
      */
-    protected function patchSignals(array $signals, array $options = []): void
+    protected function patchSignals(array $signals, array $options = []): static
     {
         app(Sse::class)->patchSignals($signals, $options);
+
+        return $this;
     }
 
     /**
      * Executes JavaScript in the browser.
      */
-    protected function executeScript(string $script, array $options = []): void
+    protected function executeScript(string $script, array $options = []): static
     {
         app(Sse::class)->executeScript($script, $options);
+
+        return $this;
     }
 
     /**
      * Redirects the browser by setting the location to the provided URI.
      */
-    protected function location(string $uri, array $options = []): void
+    protected function location(string $uri, array $options = []): static
     {
         app(Sse::class)->location($uri, $options);
+
+        return $this;
     }
 
     /**
      * Renders and returns Datastar view.
      */
-    protected function renderDatastarView(string $view, array $variables = []): void
+    protected function renderDatastarView(string $view, array $variables = []): static
     {
         app(Sse::class)->renderDatastarView($view, $variables);
+
+        return $this;
     }
 
     /**

@@ -32,8 +32,6 @@ class DatastarController extends Controller
         }
 
         if (is_string($config->route)) {
-            $this->shouldSendSseEvents();
-
             return $this->getStreamedResponse(function() use ($config) {
                 $this->renderDatastarView($config->route, $config->params);
             });

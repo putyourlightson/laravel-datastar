@@ -21,14 +21,16 @@ use Throwable;
 class Sse
 {
     /**
-     * The response data.
+     * Whether the response is a streamed response.
      */
-    private string $responseData = '';
+    private bool $isStreamedResponse = false;
 
     /**
-     * Whether SSE events should be sent when processed.
+     * Server sent events to send.
+     *
+     * @var EventInterface[]
      */
-    private bool $shouldSendSseEvents = false;
+    private array $sseEvents = [];
 
     /**
      * Server sent event options to send.
@@ -50,6 +52,8 @@ class Sse
      */
     public function getStreamedResponse(callable $callable): StreamedResponse
     {
+        $this->isStreamedResponse = true;
+
         $response = new StreamedResponse($callable);
 
         foreach (ServerSentEventGenerator::headers() as $name => $value) {
@@ -65,16 +69,21 @@ class Sse
     public function getEventStream(): StreamedResponse
     {
         return $this->getStreamedResponse(function() {
-            echo $this->responseData;
+            echo $this->getEventOutput();
         });
     }
 
     /**
-     * Sets whether SSE events should be sent when processed.
+     * Returns the output of all events as a string.
      */
-    public function shouldSendSseEvents(bool $value = true): void
+    public function getEventOutput(): string
     {
-        $this->shouldSendSseEvents = $value;
+        $data = '';
+        foreach ($this->sseEvents as $event) {
+            $data .= $event->getOutput();
+        }
+
+        return $data;
     }
 
     /**
@@ -251,28 +260,21 @@ class Sse
     {
         $this->verifySseMethodInProcess($event);
 
-        if ($this->shouldSendSseEvents) {
+        $this->sseEvents[] = $event;
+
+        if ($this->isStreamedResponse) {
             // Clean and end all existing output buffers.
             while (ob_get_level() > 0) {
                 ob_end_clean();
             }
-        }
 
-        $output = $event->getOutput();
-
-        if ($this->shouldSendSseEvents) {
-            echo $output;
+            echo $event->getOutput();
 
             if (ob_get_contents()) {
                 ob_end_flush();
             }
             flush();
-        }
 
-        // Append the resulting output to the response data.
-        $this->responseData .= $output;
-
-        if ($this->shouldSendSseEvents) {
             // Start a new output buffer to capture any subsequent inline content.
             ob_start();
         }

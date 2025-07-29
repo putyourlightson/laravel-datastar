@@ -29,11 +29,11 @@ trait DatastarEventStream
     }
 
     /**
-     * Sets whether SSE events should be sent when processed.
+     * Returns the output of all events as a string.
      */
-    protected function shouldSendSseEvents(bool $value = true): void
+    public function getEventOutput(): string
     {
-        app(Sse::class)->shouldSendSseEvents($value);
+        return app(Sse::class)->getEventOutput();
     }
 
     /**

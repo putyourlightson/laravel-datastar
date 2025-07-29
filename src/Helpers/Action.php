@@ -40,6 +40,10 @@ class Action
      */
     public static function getUrl(string|array $route, array $params = []): string
     {
+        if (is_string($route) && (str_starts_with($route, 'http') || str_starts_with($route, '/'))) {
+            return $route;
+        }
+
         $config = new Config([
             'route' => $route,
             'params' => $params,

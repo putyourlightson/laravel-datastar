@@ -10,6 +10,14 @@ use Putyourlightson\Datastar\Services\Sse;
 class Datastar
 {
     /**
+     * Returns a Datastar view.
+     */
+    public function view(string $path, array $params = [], array $options = []): string
+    {
+        return Action::getAction('get', 'view:' . $path, $params, $options);
+    }
+
+    /**
      * Returns a Datastar `@get` action.
      */
     public function get(string|array $route, array $params = [], array $options = []): string

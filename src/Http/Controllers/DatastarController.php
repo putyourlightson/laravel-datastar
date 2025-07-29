@@ -8,8 +8,10 @@ namespace Putyourlightson\Datastar\Http\Controllers;
 use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Controller;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Routing\Pipeline;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\View;
 use Putyourlightson\Datastar\DatastarEventStream;
 use Putyourlightson\Datastar\Models\Config;
 use ReflectionMethod;
@@ -32,42 +34,59 @@ class DatastarController extends Controller
             throw new BadRequestHttpException('Submitted data was tampered.');
         }
 
-        $controllerName = $config->route;
+        $route = $config->route;
+        $params = $config->params;
+
+        if (is_string($route) && str_starts_with($route, 'view:')) {
+            $view = substr($route, strlen('view:'));
+
+            return $this->getEventStream(function() use ($view, $params) {
+                $this->renderDatastarView($view, $params);
+            });
+        }
+
         $method = '__invoke';
 
-        if (is_string($config->route)) {
-            if (View::exists($config->route)) {
-                return $this->getEventStream(function() use ($config) {
-                    $this->renderDatastarView($config->route, $config->params);
-                });
-            }
-        } else {
-            $controllerName = $config->route[0] ?? null;
-            if (empty($controllerName)) {
+        if (is_array($route)) {
+            $route = $config->route[0] ?? null;
+            if (empty($route)) {
                 throw new BadRequestHttpException('A controller must be specified in the route.');
             }
+
             $method = $config->route[1] ?? null;
             if (empty($method)) {
                 throw new BadRequestHttpException('A controller and method must be specified in the route.');
             }
         }
 
-        if (!str_contains($controllerName, '\\')) {
-            $controllerName = 'App\\Http\\Controllers\\' . $controllerName;
+        if (!str_contains($route, '\\')) {
+            $route = 'App\\Http\\Controllers\\' . $route;
         }
 
-        if (!class_exists($controllerName)) {
-            throw new BadRequestHttpException("Controller `$controllerName` does not exist. Make sure you’re using a valid namespace and that the class is autoloaded.");
+        if (!class_exists($route)) {
+            throw new BadRequestHttpException("Controller `$route` does not exist. Make sure you’re using a valid namespace and that the class is autoloaded.");
         }
 
-        $controller = app($controllerName);
+        $controller = app($route);
+
         if (!method_exists($controller, $method)) {
-            throw new BadRequestHttpException("Method `$method` does not exist on controller `$controllerName`.");
+            throw new BadRequestHttpException("Method `$method` does not exist on controller `$route`.");
         }
 
-        $boundParams = $this->resolveRouteBindings($controller, $method, $config->params);
+        $params = $this->resolveRouteBindings($controller, $method, $params);
 
-        return app()->call([$controller, $method], $boundParams);
+        if (!($controller instanceof HasMiddleware)) {
+            return app()->call([$controller, $method], $params);
+        }
+
+        $middlewareStack = $this->buildMiddlewareStack($controller, $method);
+
+        return app(Pipeline::class)
+            ->send(request())
+            ->through($middlewareStack)
+            ->then(function () use ($controller, $method, $params) {
+                return app()->call([$controller, $method], $params);
+            });
     }
 
     /**
@@ -99,5 +118,45 @@ class DatastarController extends Controller
         }
 
         return $resolved;
+    }
+
+    /**
+     * Builds the middleware stack for the given controller and method.
+     */
+    protected function buildMiddlewareStack(object $controller, string $method): array
+    {
+        if (!($controller instanceof HasMiddleware)) {
+            return [];
+        }
+
+        $middlewareStack = [];
+
+        foreach ($controller::middleware() as $middleware) {
+            if ($middleware instanceof Middleware) {
+                if ($this->middlewareShouldApply($middleware, $method)) {
+                    $middlewareStack[] = $middleware->middleware;
+                }
+            } else {
+                $middlewareStack[] = $middleware;
+            }
+        }
+
+        return $middlewareStack;
+    }
+
+    /**
+     * Returns whether middleware should apply to the given method.
+     */
+    protected function middlewareShouldApply(Middleware $middleware, string $method): bool
+    {
+        if (!empty($middleware->only) && !in_array($method, $middleware->only)) {
+            return false;
+        }
+
+        if (!empty($middleware->except) && in_array($method, $middleware->except)) {
+            return false;
+        }
+
+        return true;
     }
 }

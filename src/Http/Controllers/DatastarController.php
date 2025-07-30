@@ -128,6 +128,7 @@ class DatastarController extends Controller
                     } else {
                         throw new BadRequestHttpException('Invalid middleware type.');
                     }
+                    $middlewareStack[] = $resolved;
                 }
             } else {
                 $resolved = $aliases[$middleware] ?? $middleware;

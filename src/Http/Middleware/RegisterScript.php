@@ -7,20 +7,19 @@ namespace Putyourlightson\Datastar\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class RegisterScript
 {
     public const VERSION = '1.0.0-RC.3';
 
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
 
-        if (!$response->isSuccessful()) {
-            return $response;
-        }
-
-        if (!str_contains($response->headers->get('content-type'), 'text/html')) {
+        if (!$response->isSuccessful()
+            || !str_contains($response->headers->get('content-type'), 'text/html')
+        ) {
             return $response;
         }
 

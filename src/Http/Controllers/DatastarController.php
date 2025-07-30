@@ -7,7 +7,6 @@ namespace Putyourlightson\Datastar\Http\Controllers;
 
 use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Routing\Controller;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Pipeline;
@@ -17,35 +16,48 @@ use Putyourlightson\Datastar\Models\Config;
 use ReflectionMethod;
 use ReflectionNamedType;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class DatastarController extends Controller
+class DatastarController
 {
     use DatastarEventStream;
 
     /**
-     * Default controller action.
+     * Renders a view in an event stream.
      */
-    public function __invoke(): ?Response
+    public function view(): StreamedResponse
     {
-        $hashedConfig = request()->input('config');
-        $config = Config::fromHashed($hashedConfig);
-        if ($config === null) {
-            throw new BadRequestHttpException('Submitted data was tampered.');
-        }
+        $config = $this->getConfig();
+        $view = $config->route;
+        $variables = $config->params;
+
+        return $this->getEventStream(function() use ($view, $variables) {
+            $this->renderDatastarView($view, $variables);
+        });
+    }
+
+    /**
+     * Runs a controller action.
+     */
+    public function action(): ?Response
+    {
+        $config = $this->getConfig();
 
         $route = $config->route;
         $params = $config->params;
+        $method = '__invoke';
 
-        if (is_string($route)) {
-            return $this->getEventStream(function() use ($route, $params) {
-                $this->renderDatastarView($route, $params);
-            });
-        }
+        if (is_array($route)) {
+            $route = $config->route[0] ?? null;
+            if (empty($route)) {
+                throw new BadRequestHttpException('A controller must be specified in the route.');
+            }
 
-        $route = $config->route[0] ?? null;
-        if (empty($route)) {
-            throw new BadRequestHttpException('A controller must be specified in the route.');
+            $method = $config->route[1] ?? null;
+            if (empty($method)) {
+                throw new BadRequestHttpException('A controller and method must be specified in the route.');
+            }
         }
 
         if (!str_contains($route, '\\')) {
@@ -57,7 +69,6 @@ class DatastarController extends Controller
         }
 
         $controller = app($route);
-        $method = $config->route[1] ?? '__invoke';
 
         if (!method_exists($controller, $method)) {
             throw new BadRequestHttpException("Method `$method` does not exist on controller `$route`.");
@@ -76,9 +87,26 @@ class DatastarController extends Controller
     }
 
     /**
+     * Returns the validated configuration from the request.
+     *
+     * @throws BadRequestHttpException if the configuration is invalid or tampered with.
+     */
+    private function getConfig(): Config
+    {
+        $hashedConfig = request()->input('config');
+        $config = Config::fromHashed($hashedConfig);
+
+        if ($config === null) {
+            throw new BadRequestHttpException('Submitted data was tampered.');
+        }
+
+        return $config;
+    }
+
+    /**
      * Resolves route bindings for the given controller and method.
      */
-    protected function resolveRouteBindings($controller, string $method, array $rawParams): array
+    private function resolveRouteBindings($controller, string $method, array $rawParams): array
     {
         $reflection = new ReflectionMethod($controller, $method);
         $resolved = [];
@@ -109,7 +137,7 @@ class DatastarController extends Controller
     /**
      * Builds the middleware stack for the given controller and method.
      */
-    protected function buildMiddlewareStack(object $controller, string $method): array
+    private function buildMiddlewareStack(object $controller, string $method): array
     {
         if (!($controller instanceof HasMiddleware)) {
             return [];
@@ -142,7 +170,7 @@ class DatastarController extends Controller
     /**
      * Returns whether middleware should apply to the given method.
      */
-    protected function middlewareShouldApply(Middleware $middleware, string $method): bool
+    private function middlewareShouldApply(Middleware $middleware, string $method): bool
     {
         if (!empty($middleware->only) && !in_array($method, $middleware->only)) {
             return false;

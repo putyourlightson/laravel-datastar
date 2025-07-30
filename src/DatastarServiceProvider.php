@@ -41,10 +41,8 @@ class DatastarServiceProvider extends ServiceProvider
     private function registerRoutes(): void
     {
         Route::middleware(['web'])->group(function() {
-            Route::any(
-                '/datastar-controller',
-                DatastarController::class,
-            );
+            Route::get('/datastar-controller', [DatastarController::class, 'view']);
+            Route::post('/datastar-controller', [DatastarController::class, 'action']);
         });
     }
 

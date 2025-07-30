@@ -5,20 +5,14 @@
 
 namespace Putyourlightson\Datastar\Helpers;
 
-use Illuminate\Validation\ValidationException;
-use Putyourlightson\Datastar\Http\Controllers\DatastarController;
-use Putyourlightson\Datastar\Models\Config;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-
 class Action
 {
     /**
-     * Returns a Datastar action.
+     * Returns a Datastar action to a URI.
      */
-    public static function getAction(string $method, string|array $route, array $params, array $options): string
+    public static function getAction(string $method, string $uri, array $options): string
     {
-        $url = self::getUrl($route, $params);
-        $args = ["'$url'"];
+        $args = ["'$uri'"];
 
         if ($method !== 'get') {
             $headers = $options['headers'] ?? [];
@@ -33,35 +27,5 @@ class Action
         $args = implode(', ', $args);
 
         return '@' . $method . '(' . $args . ')';
-    }
-
-    /**
-     * Returns a Datastar URL endpoint.
-     */
-    public static function getUrl(string|array $route, array $params = []): string
-    {
-        if (is_string($route) && (str_starts_with($route, 'http') || str_starts_with($route, '/'))) {
-            foreach ($params as $key => $value) {
-                $route = str_replace('{' . $key . '}', $value, $route);
-            }
-
-            return $route;
-        }
-
-        $config = new Config([
-            'route' => $route,
-            'params' => $params,
-        ]);
-
-        try {
-            $config->validate();
-        } catch (ValidationException $exception) {
-            throw new BadRequestHttpException($exception->getMessage());
-        }
-
-        return action(
-            DatastarController::class,
-            ['config' => $config->getHashed()],
-        );
     }
 }

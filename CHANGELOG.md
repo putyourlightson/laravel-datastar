@@ -3,8 +3,8 @@
 ## 1.0.0-RC.3 - Unreleased
 
 - The package now includes Datastar [1.0.0-RC.3](https://github.com/starfederation/datastar/releases/tag/v1.0.0-RC.3).
-- Added the ability to pass controller actions to backend requests by passing an array `['MyController', 'myAction']` to `datastar->get()` (and equivalent Blade directives).
-- Added the ability to pass routes to backend requests by passing a URI that begins with `'http` or `/` to `datastar->get()` (and equivalent Blade directives).
+- Added the ability to pass controller actions to backend requests by passing an array `['MyController', 'myAction']` to `datastar()->get()` (and equivalent Blade directives).
+- Added the ability to pass routes to backend requests by passing a URI that begins with `'http` or `/` to `datastar()->get()` (and equivalent Blade directives).
 - Server sent events are now only sent when generated inside a callable passed to `getEventStream()`.
 - Renamed the `getStreamedResponse()` method to `getEventStream()`.
 

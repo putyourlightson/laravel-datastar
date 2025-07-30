@@ -121,8 +121,13 @@ class DatastarController extends Controller
         foreach ($controller::middleware() as $middleware) {
             if ($middleware instanceof Middleware) {
                 if ($this->middlewareShouldApply($middleware, $method)) {
-                    $resolved = $aliases[$middleware->middleware] ?? $middleware->middleware;
-                    $middlewareStack[] = $resolved;
+                    if (is_callable($middleware->middleware)) {
+                        $resolved = $middleware->middleware;
+                    } elseif (is_string($middleware->middleware)) {
+                        $resolved = $aliases[$middleware->middleware] ?? $middleware->middleware;
+                    } else {
+                        throw new BadRequestHttpException('Invalid middleware type.');
+                    }
                 }
             } else {
                 $resolved = $aliases[$middleware] ?? $middleware;

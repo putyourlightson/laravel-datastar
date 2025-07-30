@@ -43,7 +43,7 @@ class DatastarServiceProvider extends ServiceProvider
         Route::middleware(['web'])->group(function() {
             Route::any(
                 '/datastar-controller',
-                [DatastarController::class, 'index'],
+                DatastarController::class,
             );
         });
     }

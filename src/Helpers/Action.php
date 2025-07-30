@@ -32,7 +32,7 @@ class Action
 
         $args = implode(', ', $args);
 
-        return "@$method($args)";
+        return '@' . $method . '(' . $args . ')';
     }
 
     /**
@@ -41,6 +41,10 @@ class Action
     public static function getUrl(string|array $route, array $params = []): string
     {
         if (is_string($route) && (str_starts_with($route, 'http') || str_starts_with($route, '/'))) {
+            foreach ($params as $key => $value) {
+                $route = str_replace('{' . $key . '}', $value, $route);
+            }
+
             return $route;
         }
 
@@ -56,7 +60,7 @@ class Action
         }
 
         return action(
-            [DatastarController::class, 'index'],
+            DatastarController::class,
             ['config' => $config->getHashed()],
         );
     }

@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class RegisterScript
 {
-    public const VERSION = '1.0.0-RC.2';
+    public const VERSION = '1.0.0-RC.3';
 
     public function handle(Request $request, Closure $next)
     {

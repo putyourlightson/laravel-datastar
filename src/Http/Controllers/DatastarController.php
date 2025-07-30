@@ -26,7 +26,7 @@ class DatastarController extends Controller
     /**
      * Default controller action.
      */
-    public function index(): ?Response
+    public function __invoke(): ?Response
     {
         $hashedConfig = request()->input('config');
         $config = Config::fromHashed($hashedConfig);
@@ -37,26 +37,15 @@ class DatastarController extends Controller
         $route = $config->route;
         $params = $config->params;
 
-        if (is_string($route) && str_starts_with($route, 'view:')) {
-            $view = substr($route, strlen('view:'));
-
-            return $this->getEventStream(function() use ($view, $params) {
-                $this->renderDatastarView($view, $params);
+        if (is_string($route)) {
+            return $this->getEventStream(function() use ($route, $params) {
+                $this->renderDatastarView($route, $params);
             });
         }
 
-        $method = '__invoke';
-
-        if (is_array($route)) {
-            $route = $config->route[0] ?? null;
-            if (empty($route)) {
-                throw new BadRequestHttpException('A controller must be specified in the route.');
-            }
-
-            $method = $config->route[1] ?? null;
-            if (empty($method)) {
-                throw new BadRequestHttpException('A controller and method must be specified in the route.');
-            }
+        $route = $config->route[0] ?? null;
+        if (empty($route)) {
+            throw new BadRequestHttpException('A controller must be specified in the route.');
         }
 
         if (!str_contains($route, '\\')) {
@@ -68,6 +57,7 @@ class DatastarController extends Controller
         }
 
         $controller = app($route);
+        $method = $config->route[1] ?? '__invoke';
 
         if (!method_exists($controller, $method)) {
             throw new BadRequestHttpException("Method `$method` does not exist on controller `$route`.");
@@ -75,16 +65,12 @@ class DatastarController extends Controller
 
         $params = $this->resolveRouteBindings($controller, $method, $params);
 
-        if (!($controller instanceof HasMiddleware)) {
-            return app()->call([$controller, $method], $params);
-        }
-
         $middlewareStack = $this->buildMiddlewareStack($controller, $method);
 
         return app(Pipeline::class)
             ->send(request())
             ->through($middlewareStack)
-            ->then(function () use ($controller, $method, $params) {
+            ->then(function() use ($controller, $method, $params) {
                 return app()->call([$controller, $method], $params);
             });
     }

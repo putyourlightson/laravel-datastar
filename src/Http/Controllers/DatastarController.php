@@ -116,14 +116,17 @@ class DatastarController extends Controller
         }
 
         $middlewareStack = [];
+        $aliases = app('router')->getMiddleware();
 
         foreach ($controller::middleware() as $middleware) {
             if ($middleware instanceof Middleware) {
                 if ($this->middlewareShouldApply($middleware, $method)) {
-                    $middlewareStack[] = $middleware->middleware;
+                    $resolved = $aliases[$middleware->middleware] ?? $middleware->middleware;
+                    $middlewareStack[] = $resolved;
                 }
             } else {
-                $middlewareStack[] = $middleware;
+                $resolved = $aliases[$middleware] ?? $middleware;
+                $middlewareStack[] = $resolved;
             }
         }
 

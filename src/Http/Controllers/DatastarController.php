@@ -11,7 +11,6 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Pipeline;
 use Illuminate\Support\Facades\App;
-use Putyourlightson\Datastar\DatastarEventStream;
 use Putyourlightson\Datastar\Models\Config;
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -21,8 +20,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class DatastarController
 {
-    use DatastarEventStream;
-
     /**
      * Renders a view in an event stream.
      */
@@ -32,8 +29,8 @@ class DatastarController
         $view = $config->route;
         $variables = $config->params;
 
-        return $this->getEventStream(function() use ($view, $variables) {
-            $this->renderDatastarView($view, $variables);
+        return sse()->getEventStream(function() use ($view, $variables) {
+            sse()->renderDatastarView($view, $variables);
         });
     }
 

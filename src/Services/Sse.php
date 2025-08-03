@@ -7,6 +7,7 @@ namespace Putyourlightson\Datastar\Services;
 
 use Illuminate\Support\Facades\View;
 use Putyourlightson\Datastar\Helpers\Request;
+use Putyourlightson\Datastar\Validation\SignalValidator;
 use starfederation\datastar\events\EventInterface;
 use starfederation\datastar\events\ExecuteScript;
 use starfederation\datastar\events\Location;
@@ -90,9 +91,18 @@ class Sse
     /**
      * Returns a validator for the signals passed into the request.
      */
-    public function getValidator(array $rules, array $messages = [], array $attributes = [])
+    public function getValidator(array $rules, array $messages = [], array $attributes = []): SignalValidator
     {
         return Request::getValidator($rules, $messages, $attributes);
+    }
+
+    /**
+     * Validates the signals passed into the request.
+     */
+    public function validate(array $rules, array $messages = [], array $attributes = []): array
+    {
+        return Request::getValidator($rules, $messages, $attributes)
+            ->validate();
     }
 
     /**

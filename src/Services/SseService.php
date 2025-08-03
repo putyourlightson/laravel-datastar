@@ -5,8 +5,11 @@
 
 namespace Putyourlightson\Datastar\Services;
 
+use Illuminate\Contracts\Translation\Translator;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
 use Putyourlightson\Datastar\Helpers\Request;
+use Putyourlightson\Datastar\Validation\SignalValidator;
 use starfederation\datastar\events\EventInterface;
 use starfederation\datastar\events\ExecuteScript;
 use starfederation\datastar\events\Location;
@@ -88,13 +91,19 @@ class SseService
     }
 
     /**
-     * Resets the current events.
+     * Returns a validator for the signals passed into the request.
      */
-    public function resetEvents(): static
+    public function getValidator(array $rules, array $messages = [], array $attributes = [])
     {
-        $this->sseEvents = [];
+        return Request::getValidator($rules, $messages, $attributes);
+    }
 
-        return $this;
+    /**
+     * Reads and returns the signals passed into the request.
+     */
+    public function readSignals(): array
+    {
+        return Request::readSignals();
     }
 
     /**
@@ -191,7 +200,7 @@ class SseService
             $this->throwException('View `' . $view . '` does not exist.');
         }
 
-        $signals = Request::readSignals();
+        $signals = $this->readSignals();
         $variables = array_merge(
             [config('datastar.signalsVariableName', 'signals') => $signals],
             $variables,
@@ -212,6 +221,16 @@ class SseService
         if (trim($output) !== '') {
             $this->patchElements($output);
         }
+
+        return $this;
+    }
+
+    /**
+     * Resets the current events.
+     */
+    public function resetEvents(): static
+    {
+        $this->sseEvents = [];
 
         return $this;
     }

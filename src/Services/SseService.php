@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Throwable;
 
-class Sse
+class SseService
 {
     /**
      * Whether the response is a streamed response.
@@ -73,20 +73,34 @@ class Sse
     /**
      * Returns the output of all events as a string.
      */
-    public function getEventOutput(): string
+    public function getEventOutput(bool $reset = true): string
     {
         $data = '';
         foreach ($this->sseEvents as $event) {
             $data .= $event->getOutput();
         }
 
+        if ($reset) {
+            $this->resetEvents();
+        }
+
         return $data;
+    }
+
+    /**
+     * Resets the current events.
+     */
+    public function resetEvents(): static
+    {
+        $this->sseEvents = [];
+
+        return $this;
     }
 
     /**
      * Patches elements into the DOM.
      */
-    public function patchElements(string $data, array $options = []): void
+    public function patchElements(string $data, array $options = []): static
     {
         $options = $this->patchEventOptions(
             config('datastar.defaultElementOptions', []),
@@ -96,12 +110,14 @@ class Sse
         $event = new PatchElements($data, $options);
 
         $this->processEvent($event);
+
+        return $this;
     }
 
     /**
      * Removes elements from the DOM.
      */
-    public function removeElements(string $selector, array $options = []): void
+    public function removeElements(string $selector, array $options = []): static
     {
         $options = $this->patchEventOptions(
             config('datastar.defaultElementOptions', []),
@@ -111,12 +127,14 @@ class Sse
         $event = new RemoveElements($selector, $options);
 
         $this->processEvent($event);
+
+        return $this;
     }
 
     /**
      * Patches signals.
      */
-    public function patchSignals(array $signals, array $options = []): void
+    public function patchSignals(array $signals, array $options = []): static
     {
         $options = $this->patchEventOptions(
             config('datastar.defaultSignalOptions', []),
@@ -126,12 +144,14 @@ class Sse
         $event = new PatchSignals($signals, $options);
 
         $this->processEvent($event);
+
+        return $this;
     }
 
     /**
      * Executes JavaScript in the browser.
      */
-    public function executeScript(string $script, array $options = []): void
+    public function executeScript(string $script, array $options = []): static
     {
         $options = $this->patchEventOptions(
             config('datastar.defaultExecuteScriptOptions', []),
@@ -141,12 +161,14 @@ class Sse
         $event = new ExecuteScript($script, $options);
 
         $this->processEvent($event);
+
+        return $this;
     }
 
     /**
      * Redirects the browser by setting the location to the provided URI.
      */
-    public function location(string $uri, array $options = []): void
+    public function location(string $uri, array $options = []): static
     {
         $options = $this->patchEventOptions(
             config('datastar.defaultExecuteScriptOptions', []),
@@ -156,12 +178,14 @@ class Sse
         $event = new Location($uri, $options);
 
         $this->processEvent($event);
+
+        return $this;
     }
 
     /**
-     * Returns a rendered Datastar view.
+     * Renders a view.
      */
-    public function renderDatastarView(string $view, array $variables = []): void
+    public function view(string $view, array $variables = []): static
     {
         if (!View::exists($view)) {
             $this->throwException('View `' . $view . '` does not exist.');
@@ -188,23 +212,29 @@ class Sse
         if (trim($output) !== '') {
             $this->patchElements($output);
         }
+
+        return $this;
     }
 
     /**
      * Sets server sent event options for the current request.
      */
-    public function setSseEventOptions(array $options): void
+    public function setSseEventOptions(array $options): static
     {
         $this->sseEventOptions = $options;
+
+        return $this;
     }
 
     /**
      * Sets the server sent event method and options currently in process.
      */
-    public function setSseInProcess(?string $method, array $options = []): void
+    public function setSseInProcess(?string $method, array $options = []): static
     {
         $this->sseMethodInProcess = $method;
         $this->sseOptionsInProcess = $options;
+
+        return $this;
     }
 
     /**

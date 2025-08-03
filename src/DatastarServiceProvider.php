@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Putyourlightson\Datastar\Http\Controllers\DatastarController;
 use Putyourlightson\Datastar\Http\Middleware\RegisterScript;
-use Putyourlightson\Datastar\Services\SseService;
+use Putyourlightson\Datastar\Services\Sse;
 
 class DatastarServiceProvider extends ServiceProvider
 {
@@ -18,8 +18,8 @@ class DatastarServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/datastar.php', 'datastar');
 
-        $this->app->singleton(SseService::class, function() {
-            return new SseService();
+        $this->app->singleton(Sse::class, function() {
+            return new Sse();
         });
     }
 
@@ -56,12 +56,12 @@ class DatastarServiceProvider extends ServiceProvider
     }
 
     /**
-     * @uses SseService::patchElements()
-     * @uses SseService::removeElements()
-     * @uses SseService::patchSignals()
-     * @uses SseService::executeScript()
-     * @uses SseService::location()
-     * @uses SseService::setSseInProcess
+     * @uses Sse::patchElements()
+     * @uses Sse::removeElements()
+     * @uses Sse::patchSignals()
+     * @uses Sse::executeScript()
+     * @uses Sse::location()
+     * @uses Sse::setSseInProcess
      */
     private function registerDirectives(): void
     {
@@ -96,6 +96,6 @@ class DatastarServiceProvider extends ServiceProvider
 
     private function getDirective(string $expression): string
     {
-        return "<?php app(\Putyourlightson\Datastar\Services\SseService::class)->$expression ?>";
+        return "<?php app(\Putyourlightson\Datastar\Services\Sse::class)->$expression ?>";
     }
 }

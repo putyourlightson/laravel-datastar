@@ -8,7 +8,7 @@ namespace Putyourlightson\Datastar\Helpers;
 use Illuminate\Validation\ValidationException;
 use Putyourlightson\Datastar\Http\Controllers\DatastarController;
 use Putyourlightson\Datastar\Models\Config;
-use Putyourlightson\Datastar\Services\SseService;
+use Putyourlightson\Datastar\Services\Sse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Datastar
@@ -88,7 +88,7 @@ class Datastar
      */
     public function setSseEventOptions(array $options = []): void
     {
-        app(SseService::class)->setSseEventOptions($options);
+        app(Sse::class)->setSseEventOptions($options);
     }
 
 

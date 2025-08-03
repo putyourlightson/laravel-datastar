@@ -5,11 +5,8 @@
 
 namespace Putyourlightson\Datastar\Services;
 
-use Illuminate\Contracts\Translation\Translator;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
 use Putyourlightson\Datastar\Helpers\Request;
-use Putyourlightson\Datastar\Validation\SignalValidator;
 use starfederation\datastar\events\EventInterface;
 use starfederation\datastar\events\ExecuteScript;
 use starfederation\datastar\events\Location;
@@ -21,7 +18,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Throwable;
 
-class SseService
+class Sse
 {
     /**
      * Whether the response is a streamed response.

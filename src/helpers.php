@@ -4,7 +4,7 @@
  */
 
 use Putyourlightson\Datastar\Helpers\Datastar;
-use Putyourlightson\Datastar\Services\SseService;
+use Putyourlightson\Datastar\Services\Sse;
 
 if (!function_exists('datastar')) {
     function datastar(): Datastar
@@ -14,8 +14,8 @@ if (!function_exists('datastar')) {
 }
 
 if (!function_exists('sse')) {
-    function sse(): SseService
+    function sse(): Sse
     {
-        return app(SseService::class);
+        return app(Sse::class);
     }
 }

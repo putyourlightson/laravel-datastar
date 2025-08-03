@@ -185,7 +185,7 @@ class SseService
     /**
      * Renders a view.
      */
-    public function view(string $view, array $variables = []): static
+    public function renderView(string $view, array $variables = []): static
     {
         if (!View::exists($view)) {
             $this->throwException('View `' . $view . '` does not exist.');

@@ -30,7 +30,7 @@ class DatastarController
         $variables = $config->params;
 
         return sse()->getEventStream(function() use ($view, $variables) {
-            sse()->view($view, $variables);
+            sse()->renderView($view, $variables);
         });
     }
 

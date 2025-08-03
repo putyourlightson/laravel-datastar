@@ -7,7 +7,7 @@
 - Added the ability to pass routes to backend requests by passing a URI that begins with `'http` or `/` to `datastar()->get()` (and equivalent Blade directives).
 - Server sent events are now only sent when generated inside a callable passed to `getEventStream()`.
 - Renamed the `getStreamedResponse()` method to `getEventStream()`.
-- Renamed the `renderDatastarView()` method to `view()`.
+- Renamed the `renderDatastarView()` method to `renderView()`.
 
 ## 1.0.0-RC.2 - 2025-07-17
 

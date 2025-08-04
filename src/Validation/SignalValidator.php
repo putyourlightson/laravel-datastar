@@ -21,7 +21,7 @@ class SignalValidator extends Validator
 
         try {
             $validated = parent::validate();
-            sse()->patchSignals([static::ERROR_KEY => []]);
+            $this->resetErrors();
         } catch (ValidationException $exception) {
             $this->sendErrorResponse($exception->errors());
         }
@@ -37,8 +37,8 @@ class SignalValidator extends Validator
         $validated = [];
 
         try {
-            $validated = parent::validate();
-            sse()->patchSignals([$errorBag => []]);
+            $validated = parent::validateWithBag($errorBag);
+            $this->resetErrors($errorBag);
         } catch (ValidationException $exception) {
             $this->sendErrorResponse($exception->errors(), $exception->errorBag);
         }
@@ -55,7 +55,7 @@ class SignalValidator extends Validator
 
         try {
             $validated = parent::validated();
-            sse()->patchSignals([static::ERROR_KEY => []]);
+            $this->resetErrors();
         } catch (ValidationException $exception) {
             $this->sendErrorResponse($exception->errors());
         }
@@ -72,5 +72,14 @@ class SignalValidator extends Validator
         sse()->patchSignals([$errorKey => $errors])
             ->getEventStream()
             ->send();
+    }
+
+    /**
+     * Resets the errors in the specified error bag.
+     */
+    private function resetErrors(string $errorBag = null): void
+    {
+        $errorKey = $errorBag ?? static::ERROR_KEY;
+        sse()->patchSignals([$errorKey => []]);
     }
 }

@@ -55,6 +55,7 @@ class SignalValidator extends Validator
 
         try {
             $validated = parent::validated();
+            $this->resetErrors();
         } catch (ValidationException $exception) {
             $this->sendErrorResponse($exception->errors());
         }

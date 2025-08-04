@@ -55,7 +55,6 @@ class SignalValidator extends Validator
 
         try {
             $validated = parent::validated();
-            $this->resetErrors();
         } catch (ValidationException $exception) {
             $this->sendErrorResponse($exception->errors());
         }
@@ -80,6 +79,7 @@ class SignalValidator extends Validator
     private function resetErrors(string $errorBag = null): void
     {
         $errorKey = $errorBag ?? static::ERROR_KEY;
-        sse()->patchSignals([$errorKey => []]);
+        $signals = array_fill_keys(array_keys($this->rules), null);
+        sse()->patchSignals([$errorKey => $signals]);
     }
 }

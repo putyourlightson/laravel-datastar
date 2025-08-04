@@ -106,6 +106,15 @@ class Sse
     }
 
     /**
+     * Validates the signals passed into the request using a provided error bag.
+     */
+    public function validateWithBag(string $errorBag, array $rules, array $messages = [], array $attributes = []): array
+    {
+        return Request::getValidator($rules, $messages, $attributes)
+            ->validateWithBag($errorBag);
+    }
+
+    /**
      * Reads and returns the signals passed into the request.
      */
     public function readSignals(): array

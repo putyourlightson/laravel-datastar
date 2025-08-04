@@ -72,6 +72,9 @@ class SignalValidator extends Validator
         sse()->patchSignals([$errorKey => $errors])
             ->getEventStream()
             ->send();
+
+        // Exit to prevent further processing of the request.
+        exit;
     }
 
     /**

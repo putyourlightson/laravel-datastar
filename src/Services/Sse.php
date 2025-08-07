@@ -27,6 +27,12 @@ class Sse
     private bool $isStreamedResponse = false;
 
     /**
+     * Whether the session should be closed when the event stream begins.
+     * This is useful to allow other requests to be processed while the event stream is being sent.
+     */
+    private bool $closeSession = true;
+
+    /**
      * Server sent events to send.
      *
      * @var EventInterface[]
@@ -51,19 +57,18 @@ class Sse
     /**
      * Returns an event stream.
      */
-    public function getEventStream(?callable $callable = null, bool $closeSession = true): StreamedResponse
+    public function getEventStream(?callable $callable = null): StreamedResponse
     {
         // Abort the process if the client closes the connection.
         ignore_user_abort(false);
 
-        // Close the session immediately to allow other requests.
-        if ($closeSession && session_status() === PHP_SESSION_ACTIVE) {
-            session_write_close();
-        }
-
         $this->isStreamedResponse = true;
 
         $eventStream = function() use ($callable) {
+            if ($this->closeSession && session_status() === PHP_SESSION_ACTIVE) {
+                session_write_close();
+            }
+
             echo $this->getEventOutput();
             ob_flush();
             flush();
@@ -252,6 +257,16 @@ class Sse
     public function resetEvents(): static
     {
         $this->sseEvents = [];
+
+        return $this;
+    }
+
+    /**
+     * Sets the value of the `closeSession` property.
+     */
+    public function setCloseSession(bool $value): static
+    {
+        $this->closeSession = $value;
 
         return $this;
     }

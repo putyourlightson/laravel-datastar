@@ -1,5 +1,19 @@
 # Release Notes for Datastar
 
+## 1.0.0-RC.3 - 2025-08-09
+
+- The package now includes Datastar [1.0.0-RC.4](https://github.com/starfederation/datastar/releases/tag/v1.0.0-RC.4).
+- The `datastar()->get()` and equivalent Blade directives now only support passing a route URI.
+- Added the ability to render views in backend requests by passing a view path `path.to.view` to `datastar()->view()`.
+- Added the ability to pass controller actions to backend requests by passing an array `['MyController', 'myAction']` to `datastar()->action()`.
+- Added the `getValidator()` method to the `sse()` helper.
+- Added the `validate()` and `validateWithBag()` methods to the `sse()` helper.
+- Added the `shouldCloseSession()` method to the `sse()` helper that determines whether the session should be closed when the event stream begins.
+- The session is now closed by default when the `getEventStream()` method is called, to prevent session locking.
+- Replaced the `DatastarEventStream` trait with the `sse()` helper.
+- Renamed the `getStreamedResponse()` method to `getEventStream()`.
+- Renamed the `renderDatastarView()` method to `renderView()`.
+
 ## 1.0.0-RC.2 - 2025-07-17
 
 - The package now includes Datastar [1.0.0-RC.2](https://github.com/starfederation/datastar/releases/tag/v1.0.0-RC.2).

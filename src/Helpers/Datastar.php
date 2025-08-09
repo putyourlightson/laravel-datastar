@@ -8,86 +8,71 @@ namespace Putyourlightson\Datastar\Helpers;
 use Illuminate\Validation\ValidationException;
 use Putyourlightson\Datastar\Http\Controllers\DatastarController;
 use Putyourlightson\Datastar\Models\Config;
+use Putyourlightson\Datastar\Services\Sse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Datastar
 {
     /**
-     * Returns a Datastar `@get` action.
+     * Returns a Datastar `@get` action to render a view.
      */
-    public function get(string $view, array $variables = [], array $options = []): string
+    public function view(string $view, array $variables = [], array $options = []): string
     {
-        return $this->getAction('get', $view, $variables, $options);
+        $config = $this->getConfig($view, $variables);
+        $uri = action([DatastarController::class, 'view'], ['config' => $config->getHashed()]);
+
+        return $this->get($uri, $options);
     }
 
     /**
-     * Returns a Datastar `@post` action.
+     * Returns a Datastar `@post` action to a controller action.
      */
-    public function post(string $view, array $variables = [], array $options = []): string
+    public function action(string|array $route, array $params = [], array $options = []): string
     {
-        return $this->getAction('post', $view, $variables, $options);
+        $config = $this->getConfig($route, $params);
+        $uri = action([DatastarController::class, 'action'], ['config' => $config->getHashed()]);
+
+        return $this->post($uri, $options);
     }
 
     /**
-     * Returns a Datastar `@put` action.
+     * Returns a Datastar `@get` action to the given URI.
      */
-    public function put(string $view, array $variables = [], array $options = []): string
+    public function get(string $uri, array $options = []): string
     {
-        return $this->getAction('put', $view, $variables, $options);
+        return Action::getAction('get', $uri, $options);
     }
 
     /**
-     * Returns a Datastar `@patch` action.
+     * Returns a Datastar `@post` action to the given URI.
      */
-    public function patch(string $view, array $variables = [], array $options = []): string
+    public function post(string $uri, array $options = []): string
     {
-        return $this->getAction('patch', $view, $variables, $options);
+        return Action::getAction('post', $uri, $options);
     }
 
     /**
-     * Returns a Datastar `@delete` action.
+     * Returns a Datastar `@put` action to the given URI.
      */
-    public function delete(string $view, array $variables = [], array $options = []): string
+    public function put(string $uri, array $options = []): string
     {
-        return $this->getAction('delete', $view, $variables, $options);
+        return Action::getAction('put', $uri, $options);
     }
 
     /**
-     * Returns a Datastar action.
+     * Returns a Datastar `@patch` action to the given URI.
      */
-    private function getAction(string $method, string $view, array $variables, array $options): string
+    public function patch(string $uri, array $options = []): string
     {
-        $config = new Config([
-            'view' => $view,
-            'variables' => $variables,
-        ]);
+        return Action::getAction('patch', $uri, $options);
+    }
 
-        try {
-            $config->validate();
-        } catch (ValidationException $exception) {
-            throw new BadRequestHttpException($exception->getMessage());
-        }
-
-        $url = action(
-            [DatastarController::class, 'index'],
-            ['config' => $config->getHashed()],
-        );
-
-        $args = ["'$url'"];
-
-        if ($method !== 'get') {
-            $headers = $options['headers'] ?? [];
-            $headers['X-CSRF-TOKEN'] = csrf_token();
-            $options['headers'] = $headers;
-        }
-
-        if (!empty($options)) {
-            $args[] = json_encode($options);
-        }
-
-        $args = implode(', ', $args);
-
-        return "@$method($args)";
+    /**
+     * Returns a Datastar `@delete` action to the given URI.
+     */
+    public function delete(string $uri, array $options = []): string
+    {
+        return Action::getAction('delete', $uri, $options);
     }
 
     /**
@@ -96,5 +81,33 @@ class Datastar
     public function readSignals(): array
     {
         return Request::readSignals();
+    }
+
+    /**
+     * Sets server sent event options.
+     */
+    public function setSseEventOptions(array $options = []): void
+    {
+        app(Sse::class)->setSseEventOptions($options);
+    }
+
+
+    /**
+     * Returns a Datastar config for the given route and parameters.
+     */
+    private function getConfig(string|array $route, array $params = []): Config
+    {
+        $config = new Config([
+            'route' => $route,
+            'params' => $params,
+        ]);
+
+        try {
+            $config->validate();
+        } catch (ValidationException $exception) {
+            throw new BadRequestHttpException($exception->getMessage());
+        }
+
+        return $config;
     }
 }

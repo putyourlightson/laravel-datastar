@@ -30,7 +30,7 @@ class Sse
      * Whether the session should be closed when the event stream begins.
      * This is useful to allow other requests to be processed while the event stream is being sent.
      */
-    private bool $closeSession = true;
+    private bool $shouldCloseSession = true;
 
     /**
      * Server sent events to send.
@@ -65,7 +65,7 @@ class Sse
         $this->isStreamedResponse = true;
 
         $eventStream = function() use ($callable) {
-            if ($this->closeSession && session_status() === PHP_SESSION_ACTIVE) {
+            if ($this->shouldCloseSession && session_status() === PHP_SESSION_ACTIVE) {
                 session_write_close();
             }
 
@@ -262,16 +262,6 @@ class Sse
     }
 
     /**
-     * Sets the value of the `closeSession` property.
-     */
-    public function setCloseSession(bool $value): static
-    {
-        $this->closeSession = $value;
-
-        return $this;
-    }
-
-    /**
      * Sets server sent event options for the current request.
      */
     public function setSseEventOptions(array $options): static
@@ -288,6 +278,16 @@ class Sse
     {
         $this->sseMethodInProcess = $method;
         $this->sseOptionsInProcess = $options;
+
+        return $this;
+    }
+
+    /**
+     * Determines whether the session should be closed when the event stream begins.
+     */
+    public function shouldCloseSession(bool $value): static
+    {
+        $this->shouldCloseSession = $value;
 
         return $this;
     }

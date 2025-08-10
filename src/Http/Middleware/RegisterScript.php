@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RegisterScript
 {
-    public const VERSION = '1.0.0-RC.3';
+    public const VERSION = '1.0.0-RC.4';
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -24,7 +24,7 @@ class RegisterScript
         }
 
         $content = $response->getContent();
-        $path = asset('vendor/datastar/' . self::VERSION . '/datastar.js');
+        $path = asset('vendor/datastar/' . static::VERSION . '/datastar.js');
         $asset = '<script type="module" src="' . $path . '"></script>';
         $content = str_replace('</head>', $asset . '</head>', $content);
         $response->setContent($content);

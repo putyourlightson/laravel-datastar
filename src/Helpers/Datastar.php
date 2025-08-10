@@ -16,7 +16,7 @@ class Datastar
     /**
      * Returns a Datastar `@get` action to render a view.
      */
-    public function view(string $view, array $variables = [], array $options = []): string
+    public function view(string $view, array $variables = [], array|string $options = []): string
     {
         $config = $this->getConfig($view, $variables);
         $uri = action([DatastarController::class, 'view'], ['config' => $config->getHashed()]);
@@ -27,7 +27,7 @@ class Datastar
     /**
      * Returns a Datastar `@post` action to a controller action.
      */
-    public function action(string|array $route, array $params = [], array $options = []): string
+    public function action(string|array $route, array $params = [], array|string $options = []): string
     {
         $config = $this->getConfig($route, $params);
         $uri = action([DatastarController::class, 'action'], ['config' => $config->getHashed()]);
@@ -38,7 +38,7 @@ class Datastar
     /**
      * Returns a Datastar `@get` action to the given URI.
      */
-    public function get(string $uri, array $options = []): string
+    public function get(string $uri, array|string $options = []): string
     {
         return Action::getAction('get', $uri, $options);
     }
@@ -46,7 +46,7 @@ class Datastar
     /**
      * Returns a Datastar `@post` action to the given URI.
      */
-    public function post(string $uri, array $options = []): string
+    public function post(string $uri, array|string $options = []): string
     {
         return Action::getAction('post', $uri, $options);
     }
@@ -54,7 +54,7 @@ class Datastar
     /**
      * Returns a Datastar `@put` action to the given URI.
      */
-    public function put(string $uri, array $options = []): string
+    public function put(string $uri, array|string $options = []): string
     {
         return Action::getAction('put', $uri, $options);
     }
@@ -62,7 +62,7 @@ class Datastar
     /**
      * Returns a Datastar `@patch` action to the given URI.
      */
-    public function patch(string $uri, array $options = []): string
+    public function patch(string $uri, array|string $options = []): string
     {
         return Action::getAction('patch', $uri, $options);
     }
@@ -70,7 +70,7 @@ class Datastar
     /**
      * Returns a Datastar `@delete` action to the given URI.
      */
-    public function delete(string $uri, array $options = []): string
+    public function delete(string $uri, array|string $options = []): string
     {
         return Action::getAction('delete', $uri, $options);
     }

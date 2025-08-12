@@ -303,6 +303,8 @@ class Sse
         $this->getEventStream(function() use ($exception) {
             $this->executeScript('console.error(' . json_encode($exception->getMessage()) . ');');
         })->send();
+
+        exit();
     }
 
     /**

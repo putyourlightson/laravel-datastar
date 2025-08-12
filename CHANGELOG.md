@@ -1,8 +1,9 @@
 # Release Notes for Datastar
 
-## 1.0.0-RC.4 - 2025-08-09
+## 1.0.0-RC.4 - 2025-08-12
 
-- It’s now possible to pass options in as string, for cases when JSON encoding is not desirable.
+- Made it possible to pass options in as string, for cases when JSON encoding is not desirable.
+- Improved error handling.
 
 ## 1.0.0-RC.3 - 2025-08-09
 

@@ -5,6 +5,7 @@
 
 namespace Putyourlightson\Datastar\Services;
 
+use Exception;
 use Illuminate\Support\Facades\View;
 use Putyourlightson\Datastar\Helpers\Request;
 use Putyourlightson\Datastar\Validation\SignalValidator;
@@ -222,10 +223,6 @@ class Sse
      */
     public function renderView(string $view, array $variables = []): static
     {
-        if (!View::exists($view)) {
-            $this->throwException('View `' . $view . '` does not exist.');
-        }
-
         $signals = $this->readSignals();
         $variables = array_merge(
             [config('datastar.signalsVariableName', 'signals') => $signals],
@@ -293,19 +290,19 @@ class Sse
     }
 
     /**
-     * Throws an exception with the appropriate formats for easier debugging.
+     * Throws an exception or logs a console error, for easier debugging.
      *
      * @phpstan-return never
      */
-    public function throwException(Throwable|string $exception): void
+    public function throwException(Throwable $exception): void
     {
-        request()->headers->set('Accept', 'text/html');
-
-        if ($exception instanceof Throwable) {
+        if (config('app.debug')) {
             throw $exception;
         }
 
-        throw new BadRequestHttpException($exception);
+        $this->getEventStream(function() use ($exception) {
+            $this->executeScript('console.error(' . json_encode($exception->getMessage()) . ');');
+        })->send();
     }
 
     /**
@@ -382,7 +379,7 @@ class Sse
             if ($method === 'patchElements') {
                 $message .= ' Ensure that you are not setting or removing signals inside `@patchelements` or `@executescript` directives.';
             }
-            $this->throwException($message);
+            $this->throwException(new Exception($message));
         }
     }
 }

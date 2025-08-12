@@ -17,7 +17,6 @@ use starfederation\datastar\events\PatchSignals;
 use starfederation\datastar\events\RemoveElements;
 use starfederation\datastar\ServerSentEventGenerator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Throwable;
 
 class Sse

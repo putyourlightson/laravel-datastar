@@ -31,8 +31,10 @@ class Action
 
     private static function addCsrfToken(array|string $options): string
     {
-        $token = csrf_token();
         $csrfHeader = 'X-CSRF-TOKEN';
+
+        // Get the CSRF token from the request or use an empty string if not available.
+        $token = csrf_token() ?? '';
 
         if (is_array($options)) {
             return self::addCsrfToArray($options, $csrfHeader, $token);

@@ -236,12 +236,11 @@ class Sse
 
         try {
             $output = view($view, $variables)->render();
+            if (!empty(trim($output))) {
+                $this->patchElements($output);
+            }
         } catch (Throwable $exception) {
             $this->throwException($exception);
-        }
-
-        if (trim($output) !== '') {
-            $this->patchElements($output);
         }
 
         return $this;

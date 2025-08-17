@@ -21,7 +21,7 @@ class Action
         }
 
         if (!empty($options)) {
-            $args[] = json_encode($options);
+            $args[] = $options;
         }
 
         $args = implode(', ', $args);

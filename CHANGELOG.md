@@ -1,8 +1,9 @@
 # Release Notes for Datastar
 
-## 1.0.0-RC.5 - Unreleased
+## 1.0.0-RC.5 - 2025-08-17
 
 - The package now includes Datastar [1.0.0-RC.5](https://github.com/starfederation/datastar/releases/tag/v1.0.0-RC.5).
+- Fixed a bug in which options were being double JSON encoded.
 
 ## 1.0.0-RC.4 - 2025-08-12
 

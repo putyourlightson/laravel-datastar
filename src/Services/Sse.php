@@ -6,7 +6,7 @@
 namespace Putyourlightson\Datastar\Services;
 
 use Exception;
-use Illuminate\Support\Facades\View;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Putyourlightson\Datastar\Helpers\Request;
 use Putyourlightson\Datastar\Validation\SignalValidator;
 use starfederation\datastar\events\EventInterface;
@@ -288,21 +288,26 @@ class Sse
     }
 
     /**
-     * Throws an exception or logs a console error, for easier debugging.
+     * Patches an exception response or logs a console error.
      *
      * @phpstan-return never
      */
     public function throwException(Throwable $exception): void
     {
-        if (config('app.debug')) {
-            throw $exception;
-        }
+        $this->resetEvents();
+        $this->setSseInProcess(null);
 
         $this->getEventStream(function() use ($exception) {
-            $this->executeScript('console.error(' . json_encode($exception->getMessage()) . ');');
+            if (!config('app.debug')) {
+                $exceptionHandler = app(ExceptionHandler::class);
+                $response = $exceptionHandler->render(app('request'), $exception);
+                $this->patchElements($response->getContent());
+            } else {
+                $this->executeScript('console.error(' . json_encode($exception->getMessage()) . ');');
+            }
         })->send();
 
-        exit();
+        exit(1);
     }
 
     /**

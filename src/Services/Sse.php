@@ -298,7 +298,7 @@ class Sse
         $this->setSseInProcess(null);
 
         $this->getEventStream(function() use ($exception) {
-            if (!config('app.debug')) {
+            if (config('app.debug')) {
                 $exceptionHandler = app(ExceptionHandler::class);
                 $response = $exceptionHandler->render(app('request'), $exception);
                 $this->patchElements($response->getContent());

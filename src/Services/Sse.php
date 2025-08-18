@@ -298,11 +298,15 @@ class Sse
             $exceptionHandler = app(ExceptionHandler::class);
             if ($exceptionHandler->shouldReport($exception)) {
                 $exceptionHandler->report($exception);
+            }
+
+            if (config('app.debug')) {
                 $response = $exceptionHandler->render(app('request'), $exception);
                 $event = new PatchElements($response->getContent());
             } else {
                 $event = new ExecuteScript('console.error(' . json_encode($exception->getMessage()) . ');');
             }
+
             echo $event->getOutput();
         })->send();
 

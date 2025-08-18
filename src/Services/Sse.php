@@ -294,17 +294,16 @@ class Sse
      */
     public function throwException(Throwable $exception): void
     {
-        $this->resetEvents();
-        $this->setSseInProcess(null);
-
         $this->getEventStream(function() use ($exception) {
-            if (config('app.debug')) {
-                $exceptionHandler = app(ExceptionHandler::class);
+            $exceptionHandler = app(ExceptionHandler::class);
+            if ($exceptionHandler->shouldReport($exception)) {
+                $exceptionHandler->report($exception);
                 $response = $exceptionHandler->render(app('request'), $exception);
-                $this->patchElements($response->getContent());
+                $event = new PatchElements($response->getContent());
             } else {
-                $this->executeScript('console.error(' . json_encode($exception->getMessage()) . ');');
+                $event = new ExecuteScript('console.error(' . json_encode($exception->getMessage()) . ');');
             }
+            echo $event->getOutput();
         })->send();
 
         exit(1);

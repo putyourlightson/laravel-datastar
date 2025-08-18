@@ -304,7 +304,8 @@ class Sse
                 $response = $exceptionHandler->render(app('request'), $exception);
                 $event = new PatchElements($response->getContent());
             } else {
-                $event = new ExecuteScript('console.error(' . json_encode($exception->getMessage()) . ');');
+                $message = 'A server error occurred.';
+                $event = new ExecuteScript('console.error(' . json_encode($message) . ');');
             }
 
             echo $event->getOutput();

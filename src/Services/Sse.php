@@ -74,7 +74,11 @@ class Sse
             flush();
 
             if (is_callable($callable)) {
-                $callable();
+                try {
+                    $callable();
+                } catch (Throwable $exception) {
+                    $this->throwException($exception);
+                }
             }
         };
 

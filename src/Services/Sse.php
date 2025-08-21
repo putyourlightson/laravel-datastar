@@ -7,8 +7,10 @@ namespace Putyourlightson\Datastar\Services;
 
 use Exception;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Foundation\Http\HtmlDumper;
 use Putyourlightson\Datastar\Helpers\Request;
 use Putyourlightson\Datastar\Validation\SignalValidator;
+use starfederation\datastar\enums\ElementPatchMode;
 use starfederation\datastar\events\EventInterface;
 use starfederation\datastar\events\ExecuteScript;
 use starfederation\datastar\events\Location;
@@ -17,6 +19,8 @@ use starfederation\datastar\events\PatchSignals;
 use starfederation\datastar\events\RemoveElements;
 use starfederation\datastar\ServerSentEventGenerator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\VarDumper\Cloner\VarCloner;
+use Symfony\Component\VarDumper\VarDumper;
 use Throwable;
 
 class Sse
@@ -62,6 +66,7 @@ class Sse
         // Abort the process if the client closes the connection.
         ignore_user_abort(false);
 
+        $this->handleVarDump();
         $this->isStreamedResponse = true;
 
         $eventStream = function() use ($callable) {
@@ -316,6 +321,31 @@ class Sse
         })->send();
 
         exit(1);
+    }
+
+    /**
+     * Handles calls to `dump()` and `dd()`.
+     */
+    private function handleVarDump(): void
+    {
+        VarDumper::setHandler(function($var) {
+            $cloner = new VarCloner();
+            $dumper = new HtmlDumper(base_path(), config('view.compiled'));
+
+            $stream = fopen('php://memory', 'r+');
+            $dumper->setOutput($stream);
+            $data = $cloner->cloneVar($var);
+            $dumper->dumpWithSource($data);
+
+            rewind($stream);
+            $output = stream_get_contents($stream);
+            fclose($stream);
+
+            $this->patchElements($output, [
+                'selector' => 'body',
+                'mode' => ElementPatchMode::Prepend,
+            ]);
+        });
     }
 
     /**

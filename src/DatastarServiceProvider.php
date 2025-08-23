@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Putyourlightson\Datastar\Http\Controllers\DatastarController;
+use Putyourlightson\Datastar\Http\Middleware\DumpHandler;
 use Putyourlightson\Datastar\Http\Middleware\RegisterScript;
 use Putyourlightson\Datastar\Services\Sse;
 
@@ -34,6 +35,7 @@ class DatastarServiceProvider extends ServiceProvider
         ], 'public');
 
         $this->registerRoutes();
+        $this->registerDumpHandler();
         $this->registerScript();
         $this->registerDirectives();
     }
@@ -44,6 +46,11 @@ class DatastarServiceProvider extends ServiceProvider
             Route::get('/datastar-controller/view', [DatastarController::class, 'view']);
             Route::post('/datastar-controller/action', [DatastarController::class, 'action']);
         });
+    }
+
+    private function registerDumpHandler(): void
+    {
+        $this->app['router']->pushMiddlewareToGroup('web', DumpHandler::class);
     }
 
     private function registerScript(): void

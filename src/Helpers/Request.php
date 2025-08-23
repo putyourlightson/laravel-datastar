@@ -15,13 +15,16 @@ class Request
     /**
      * Returns a validator for the signals passed into the request.
      */
-    public static function getValidator(array $rules, array $messages = [], array $attributes = [])
+    public static function getValidator(array $rules, array $messages = [], array $attributes = []): SignalValidator
     {
         Validator::resolver(function(Translator $translator, array $data, array $rules, array $messages, array $attributes) {
             return new SignalValidator($translator, $data, $rules, $messages, $attributes);
         });
 
-        return Validator::make(Request::readSignals(), $rules, $messages, $attributes);
+        /** @var SignalValidator $validator */
+        $validator = Validator::make(Request::readSignals(), $rules, $messages, $attributes);
+
+        return $validator;
     }
 
     /**

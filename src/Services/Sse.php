@@ -7,7 +7,6 @@ namespace Putyourlightson\Datastar\Services;
 
 use Exception;
 use Illuminate\Contracts\Debug\ExceptionHandler;
-use Illuminate\Foundation\Http\HtmlDumper;
 use Putyourlightson\Datastar\Helpers\Request;
 use Putyourlightson\Datastar\Validation\SignalValidator;
 use starfederation\datastar\enums\ElementPatchMode;
@@ -19,8 +18,6 @@ use starfederation\datastar\events\PatchSignals;
 use starfederation\datastar\events\RemoveElements;
 use starfederation\datastar\ServerSentEventGenerator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\VarDumper\Cloner\VarCloner;
-use Symfony\Component\VarDumper\VarDumper;
 use Throwable;
 
 class Sse
@@ -66,7 +63,6 @@ class Sse
         // Abort the process if the client closes the connection.
         ignore_user_abort(false);
 
-        $this->handleVarDump();
         $this->isStreamedResponse = true;
 
         $eventStream = function() use ($callable) {
@@ -324,28 +320,18 @@ class Sse
     }
 
     /**
-     * Handles calls to `dump()` and `dd()`.
+     * Prepends dumped content to the `<body>` tag.
      */
-    private function handleVarDump(): void
+    public function dump(string $output): void
     {
-        VarDumper::setHandler(function($var) {
-            $cloner = new VarCloner();
-            $dumper = new HtmlDumper(base_path(), config('view.compiled'));
+        $this->patchElements($output, [
+            'selector' => 'body',
+            'mode' => ElementPatchMode::Prepend,
+        ]);
 
-            $stream = fopen('php://memory', 'r+');
-            $dumper->setOutput($stream);
-            $data = $cloner->cloneVar($var);
-            $dumper->dumpWithSource($data);
-
-            rewind($stream);
-            $output = stream_get_contents($stream);
-            fclose($stream);
-
-            $this->patchElements($output, [
-                'selector' => 'body',
-                'mode' => ElementPatchMode::Prepend,
-            ]);
-        });
+        if (!$this->isStreamedResponse) {
+            $this->getEventStream()->send();
+        }
     }
 
     /**

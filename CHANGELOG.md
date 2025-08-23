@@ -1,5 +1,10 @@
 # Release Notes for Datastar
 
+## 1.0.0-RC.6 - 2025-08-23
+
+- Improved error handling.
+- Improved handling of calls to `dump()` and `dd()`.
+
 ## 1.0.0-RC.5 - 2025-08-17
 
 - The package now includes Datastar [1.0.0-RC.5](https://github.com/starfederation/datastar/releases/tag/v1.0.0-RC.5).

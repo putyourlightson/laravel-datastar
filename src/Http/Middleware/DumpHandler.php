@@ -8,7 +8,6 @@ namespace Putyourlightson\Datastar\Http\Middleware;
 use Closure;
 use Illuminate\Foundation\Http\HtmlDumper;
 use Illuminate\Http\Request;
-use starfederation\datastar\enums\ElementPatchMode;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\VarDumper;

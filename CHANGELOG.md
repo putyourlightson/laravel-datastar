@@ -1,5 +1,9 @@
 # Release Notes for Datastar
 
+## 1.0.0-RC.7 - Unreleased
+
+- Added a check before clearing the output buffer to ensure it exists ([#7](https://github.com/putyourlightson/laravel-datastar/issues/7)).
+
 ## 1.0.0-RC.6 - 2025-08-23
 
 - Improved error handling.

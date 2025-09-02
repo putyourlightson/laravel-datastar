@@ -71,7 +71,9 @@ class Sse
             }
 
             echo $this->getEventOutput();
-            ob_flush();
+            if (ob_get_contents()) {
+                ob_flush();
+            }
             flush();
 
             if (is_callable($callable)) {

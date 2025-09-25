@@ -44,7 +44,7 @@ The Datastar package for Laravel allows you to handle backend requests by sendin
 
 Here’s a trivial example that toggles some backend state using the Blade view `datastar/toggle.blade.php` to handle the request.
 
-```php
+```blade
 {{-- main.blade.php --}}
 
 <div data-signals-enabled="false">
@@ -55,18 +55,18 @@ Here’s a trivial example that toggles some backend state using the Blade view 
 </div>
 ```
 
-```php
+```blade
 {{-- datastar/toggle.blade.php --}}
 
 @php
     $enabled = $signals['enabled'] ?? false;
 @endphp
 
-@patchsignals(['enabled' => $enabled])
+@patchsignals(['enabled' => !$enabled])
 
 @patchelements
     <span id="button-text">
-        {{ $enabled ? 'Disable' : 'Enable' }}
+        {{ $enabled ? 'Enable' : 'Disable' }}
     </span>
 @endpatchelements
 ```
@@ -75,12 +75,12 @@ Here’s a trivial example that toggles some backend state using the Blade view 
 
 Start by reading the [Getting Started](https://data-star.dev/guide/getting_started) guide to learn how to use Datastar on the frontend. The Datastar package for Laravel only handles backend requests.
 
-> [!NOTE]
+> [!TIP]
 > The Datastar [VSCode extension](https://marketplace.visualstudio.com/items?itemName=starfederation.datastar-vscode) and [IntelliJ plugin](https://plugins.jetbrains.com/plugin/26072-datastar-support) have autocomplete for all `data-*` attributes.
 
 When working with signals, note that you can convert a PHP array into a JSON object using the `json_encode` function.
 
-```php
+```blade
 {{-- main.blade.php --}}
 
 @php
@@ -100,25 +100,25 @@ The `datastar()` helper function is available in Blade views and returns a `Data
 
 Returns a `@get()` action request to render a view. The value should be a dot-separated path to a Blade view.
 
-```php
+```blade
 // Sends a `GET` request that renders a Blade view
 {{ datastar()->view('path.to.view') }}
 ```
 
 Variables can be passed in as a second argument, that will be available in the rendered view.
 
-> {warning}
+> [!WARNING]
 > Variables are tamper-proof yet visible in the source code in plain text, so you should avoid passing in any sensitive data.
 > Only primitive data types can be used as variables: **strings**, **numbers**, **booleans** and **arrays**. Objects and models _cannot_ be used.
 
-```php
+```blade
 // Sends a `GET` request that renders a Blade view
 {{ datastar()->view('path.to.view', ['foo' => 'bar']) }}
 ```
 
 Options can be passed into the `@get()` action using a third argument. 
 
-```php
+```blade
 // Sends a `GET` request that renders a Blade view
 {{ datastar()->view('path.to.view', ['foo' => 'bar'], ['contentType' => 'form']) }}
 ```
@@ -127,25 +127,25 @@ Options can be passed into the `@get()` action using a third argument.
 
 Returns a `@post()` action request to run a controller action. The value should be an array with a controller class name as the first value and an action name as the second. A CSRF token is automatically generated and sent along with the request.
 
-```php
+```blade
 // Sends a `POST` request that runs a controller action
 {{ datastar()->action(['MyController', 'update']) }}
 ```
 
 Params can be passed in as a second argument, that will be available as arguments to the controller action
 
-> {warning}
+> [!WARNING]
 > Params are tamper-proof yet visible in the source code in plain text, so you should avoid passing in any sensitive data.
 > Only primitive data types can be used as params: **strings**, **numbers**, **booleans** and **arrays**. Objects and models _cannot_ be used. Route-model binding works with controller actions.
 
-```php
+```blade
 // Sends a `POST` request that runs a controller action
 {{ datastar()->action(['MyController', 'update'], ['foo' => 'bar']) }}
 ```
 
 Options can be passed into the `@get()` action using a third argument. 
 
-```php
+```blade
 // Sends a `POST` request that runs a controller action
 {{ datastar()->action(['MyController', 'update'], ['foo' => 'bar'], ['contentType' => 'form']) }}
 ```
@@ -154,14 +154,14 @@ Options can be passed into the `@get()` action using a third argument.
 
 Returns a `@get()` action request that calls a route. The value must be a defined route.
 
-```php
+```blade
 // Sends a `GET` request to a route
 {{ datastar()->get('/uri') }}
 ```
 
 Options can be passed into the `@get()` action using a second argument. 
 
-```php
+```blade
 // Sends a `GET` request to a route
 {{ datastar()->get('/uri', ['contentType' => 'form']) }}
 ```
@@ -170,7 +170,7 @@ Options can be passed into the `@get()` action using a second argument.
 
 Works the same as [`datastar()->get()`](#datastar-get) but returns a `@post()` action request that calls a route. A CSRF token is automatically generated and sent along with the request.
 
-```php
+```blade
 // Sends a `POST` request to a route
 {{ datastar()->post('/uri') }}
 ```
@@ -179,7 +179,7 @@ Works the same as [`datastar()->get()`](#datastar-get) but returns a `@post()` a
 
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@put()` action request that calls a route.
 
-```php
+```blade
 // Sends a `PUT` request to a route
 {{ datastar()->put('/uri') }}
 ```
@@ -188,7 +188,7 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@put()` 
 
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@patch()` action request that calls a route.
 
-```php
+```blade
 // Sends a `PATCH` request to a route
 {{ datastar()->patch('/uri') }}
 ```
@@ -197,7 +197,7 @@ Works the same as [`datastar()->post()`](#datastar-post) but returns a `@patch()
 
 Works the same as [`datastar()->post()`](#datastar-post) but returns a `@delete()` action request that calls a route.
 
-```php
+```blade
 // Sends a `DELETE` request to a route
 {{ datastar()->delete('/uri') }}
 ```
@@ -210,20 +210,20 @@ Datastar Blade directives can patch and remove elements, patch signals, execute 
 
 The `@patchelements` directive allows you to [patch elements](https://data-star.dev/guide/getting_started#patching-elements) into the DOM.
 
-```php
-{{-- main.blade.php -}}
+```blade
+{{-- main.blade.php --}}
 
 <div id="results"></div>
 
 <div id="search">
-    <button data-on-click="{{ datastar()->get('datastar.search') }}">
+    <button data-on-click="{{ datastar()->view('datastar.search') }}">
         Search
     </button>
 </div>
 ```
 
-```php
-{{-- datastar/search.blade.php -}}
+```blade
+{{-- datastar/search.blade.php --}}
 
 @patchelements
     <div id="results">
@@ -244,7 +244,7 @@ This will swap the elements with the IDs `results` and `search` into the DOM. No
 
 Elements are patched into the DOM based on element IDs, by default. It’s possible to pass other modes and other [element patch options](https://data-star.dev/reference/sse_events#datastar-patch-elements) in as an argument.
 
-```php
+```blade
 @patchelements(['selector' => '#list', 'mode' => 'append'])
     <li>A new list item</li>
 @endpatchelements
@@ -254,16 +254,16 @@ Elements are patched into the DOM based on element IDs, by default. It’s possi
 
 Any elements output in a Datastar template (outside any `@patchelements` tags) will be automatically wrapped in a `@patchelements` directive. This makes it possible to write your views in a way that makes them more reusable.
 
-```php
-{{-- datastar/search.blade.php -}}
+```blade
+{{-- datastar/search.blade.php --}}
 
 <div id="results"></div>
 ```
 
 The view above is the equivalent of writing:
 
-```php
-{{-- datastar/search.blade.php -}}
+```blade
+{{-- datastar/search.blade.php --}}
 
 @patchelements
     <div id="results"></div>
@@ -276,7 +276,7 @@ While automatic element patching is convenient, it is less explicit and more res
 
 Elements can be removed from the DOM using the `@removeelements` directive, which accepts a CSS selector.
 
-```php
+```blade
 @removeelements('#list')
 ```
 
@@ -284,7 +284,10 @@ Elements can be removed from the DOM using the `@removeelements` directive, whic
 
 The `@patchsignals` directive allows you to [patch signals](https://data-star.dev/guide/reactive_signals#patching-signals) into the frontend signals.
 
-```php
+> [!NOTE]
+> Signals patches **cannot** be wrapped in `@patchelements` directives, since each patch creates a server-sent event which will conflict with the element’s contents.
+
+```blade
 {{- Sets the value of the `username` signal. -}}
 @patchsignals(['username' => 'johnny'])
 
@@ -295,14 +298,11 @@ The `@patchsignals` directive allows you to [patch signals](https://data-star.de
 @patchsignals(['username' => null])
 ```
 
-> {note}
-> Signals patches **cannot** be wrapped in `@patchelements` directives, since each patch creates a server-sent event which will conflict with the element’s contents.
-
 #### Signal Patch Options
 
 It’s possible to pass [signal patch options](https://data-star.dev/reference/sse_events#datastar-patch-signals) in as a second argument.
 
-```php
+```blade
 @patchsignals(['username' => 'johnny'], ['onlyIfMissing' => true])
 ```
 
@@ -310,7 +310,7 @@ It’s possible to pass [signal patch options](https://data-star.dev/reference/s
 
 The `@executescript` directive allows you to send JavaScript to the browser to be executed on the front-end.
 
-```php
+```blade
 @executescript
     alert('Username is valid');
 @endexecutescript
@@ -320,7 +320,7 @@ The `@executescript` directive allows you to send JavaScript to the browser to b
 
 It’s possible to pass execute script options in as an argument. They are applied to the `<script>` tag that is appended to the DOM.
 
-```php
+```blade
 @executescript(['autoRemove' => true, 'attributes' => ['defer' => true]])
     alert('Username is valid');
 @endexecutescript
@@ -330,7 +330,7 @@ It’s possible to pass execute script options in as an argument. They are appli
 
 The `@location` directive allows you to redirect the page by updating `window.location` on the front-end.
 
-```php
+```blade
 @location('/guide')
 ```
 
@@ -338,7 +338,7 @@ The `@location` directive allows you to redirect the page by updating `window.lo
 
 It’s possible to pass location options in as a second argument. They are applied to the `<script>` tag that is appended to the DOM.
 
-```php
+```blade
 @location('/guide', ['autoRemove' => true, 'attributes' => ['defer' => true]])
 ```
 
@@ -346,7 +346,7 @@ It’s possible to pass location options in as a second argument. They are appli
 
 You can send SSE events from your own controller using the `sse()` helper. No routes are required, as Datastar will handle routing to the controller action you specify when using the [Datastar helper](#datastar-helper).
 
-```php
+```blade
 {{-- main.blade.php --}}
 
 // Sends a `POST` request that runs a controller action
@@ -364,9 +364,13 @@ class MyController extends Controller
     public function index(): StreamedResponse
     {
         $signals = sse()->readSignals();
-        sse()->patchSignals(['enabled' => $signals['enabled'] ? false : true]);
+
+        $enabled = $signals['enabled'] ?? false;
+
+        sse()->patchSignals(['enabled' => !$enabled]);
+
         sse()->patchElements('
-            <span id="button-text">' . ($signals['enabled'] ? 'Enable' : 'Disable') . '</span>
+            <span id="button-text">' . ($enabled ? 'Enable' : 'Disable') . '</span>
         ');
         
         return sse()->getEventStream();
@@ -439,14 +443,17 @@ sse()->renderView('datastar.toggle', ['enabled' => true]);
 
 Signals can be accessed within views rendered by Datastar using the signals variable, which is an array of signals received by the request that is automatically injected into the template.
 
-```php
+> [!NOTE]
+> Signals patches **cannot** be wrapped in `@patchelements` directives, since each patch creates a server-sent event which will conflict with the element’s contents.
+
+```blade
 <input data-bind-username>
 <button data-on-click="{{ datastar()->get('path.to.view') }}">
     Check
 </button>
 ```
 
-```php
+```blade
 @php
     $username = $signals['username'];
 @endphp
@@ -459,9 +466,6 @@ If you ever need to read the signals in a request that is *not* handled by the D
     $signals = sse()->readSignals();
 @endphp
 ```
-
-> [!NOTE]
-> Signal patches _cannot_ be wrapped in `@patchelements` directives, since each update creates a server-sent event which will conflict with the element’s contents.
 
 ---
 

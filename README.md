@@ -47,9 +47,9 @@ Here’s a trivial example that toggles some backend state using the Blade view 
 ```blade
 {{-- main.blade.php --}}
 
-<div data-signals-enabled="false">
+<div data-signals:enabled="false">
     <div data-text="$enabled ? 'ON' : 'OFF'"></div>
-    <button data-on-click="{{ datastar()->view('datastar.toggle') }}">
+    <button data-on:click="{{ datastar()->view('datastar.toggle') }}">
         <span id="button-text">Enable</span>
     </button>
 </div>
@@ -216,7 +216,7 @@ The `@patchelements` directive allows you to [patch elements](https://data-star.
 <div id="results"></div>
 
 <div id="search">
-    <button data-on-click="{{ datastar()->view('datastar.search') }}">
+    <button data-on:click="{{ datastar()->view('datastar.search') }}">
         Search
     </button>
 </div>
@@ -447,8 +447,8 @@ Signals can be accessed within views rendered by Datastar using the signals vari
 > Signals patches **cannot** be wrapped in `@patchelements` directives, since each patch creates a server-sent event which will conflict with the element’s contents.
 
 ```blade
-<input data-bind-username>
-<button data-on-click="{{ datastar()->get('path.to.view') }}">
+<input data-bind:username>
+<button data-on:click="{{ datastar()->get('path.to.view') }}">
     Check
 </button>
 ```

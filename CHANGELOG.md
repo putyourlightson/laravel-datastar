@@ -1,5 +1,12 @@
 # Release Notes for Datastar
 
+## 1.0.0-RC.8 - 2025-10-26
+
+> [!NOTE]
+> The Datastar syntax has changed in this release. Please see the [release notes](https://github.com/starfederation/datastar/releases/tag/v1.0.0-RC.6) and modify your code accordingly.
+
+- The package now includes Datastar [1.0.0-RC.6](https://github.com/starfederation/datastar/releases/tag/v1.0.0-RC.6).
+
 ## 1.0.0-RC.7 - 2025-10-05
 
 - Added a check before clearing the output buffer to ensure it exists ([#7](https://github.com/putyourlightson/laravel-datastar/issues/7)).

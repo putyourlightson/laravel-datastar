@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RegisterScript
 {
-    public const VERSION = '1.0.0-RC.5';
+    public const VERSION = '1.0.0-RC.6';
 
     public function handle(Request $request, Closure $next): Response
     {

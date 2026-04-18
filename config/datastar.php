@@ -10,6 +10,12 @@ return [
     'registerScript' => true,
 
     /**
+     * Whether the session should be closed when the event stream begins.
+     * This is useful to allow other requests to be processed while the event stream is being sent.
+     */
+    'shouldCloseSession' => false,
+
+    /**
      * The name of the signals variable that will be injected into Datastar templates.
      */
     'signalsVariableName' => 'signals',

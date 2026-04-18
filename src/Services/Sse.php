@@ -31,7 +31,7 @@ class Sse
      * Whether the session should be closed when the event stream begins.
      * This is useful to allow other requests to be processed while the event stream is being sent.
      */
-    private bool $shouldCloseSession = true;
+    private bool $shouldCloseSession = false;
 
     /**
      * Server sent events to send.
@@ -54,6 +54,11 @@ class Sse
      * The server sent event options currently in process.
      */
     private array|null $sseOptionsInProcess = [];
+
+    public function __construct()
+    {
+        $this->shouldCloseSession = config('datastar.shouldCloseSession', $this->shouldCloseSession);
+    }
 
     /**
      * Returns an event stream.

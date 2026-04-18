@@ -30,7 +30,7 @@ This package requires [Laravel](https://laravel.com/) 11.0.0 or later.
 Install manually using composer, then run the `artisan vendor:publish --tag=public` command to publish the public assets.
 
 ```shell
-composer require putyourlightson/laravel-datastar:^1.0.0-RC.3
+composer require putyourlightson/laravel-datastar:^1.0.0
 
 php artisan vendor:publish --tag=public
 ```

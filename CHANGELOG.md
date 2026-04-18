@@ -1,6 +1,6 @@
 # Release Notes for Datastar
 
-## 1.0.0 - Unreleased
+## 1.0.0 - 2026-04-18
 
 - The package now includes Datastar [1.0.0](https://github.com/starfederation/datastar/releases/tag/v1.0.0).
 - Added a `shouldCloseSession` config setting that defaults to `false` to prevent issues with Apache.

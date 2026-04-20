@@ -1,5 +1,9 @@
 # Release Notes for Datastar
 
+## 1.0.1 - 2026-04-20
+
+- The package now includes Datastar [1.0.1](https://github.com/starfederation/datastar/releases/tag/v1.0.1).
+
 ## 1.0.0 - 2026-04-18
 
 - The package now includes Datastar [1.0.0](https://github.com/starfederation/datastar/releases/tag/v1.0.0).

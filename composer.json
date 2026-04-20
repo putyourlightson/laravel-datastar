@@ -1,7 +1,7 @@
 {
   "name": "putyourlightson/laravel-datastar",
   "description": "A reactive hypermedia framework for Laravel.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "library",
   "license": "mit",
   "require": {

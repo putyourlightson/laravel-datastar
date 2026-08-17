@@ -9,7 +9,6 @@ use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Support\Facades\Validator;
 use Putyourlightson\Datastar\Validation\SignalValidator;
 use starfederation\datastar\Consts;
-use starfederation\datastar\ServerSentEventGenerator;
 
 class Request
 {

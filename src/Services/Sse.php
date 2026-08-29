@@ -53,7 +53,7 @@ class Sse
     /**
      * The server sent event options currently in process.
      */
-    private array|null $sseOptionsInProcess = [];
+    private array $sseOptionsInProcess = [];
 
     public function __construct()
     {

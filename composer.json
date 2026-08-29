@@ -1,7 +1,7 @@
 {
   "name": "putyourlightson/laravel-datastar",
   "description": "A reactive hypermedia framework for Laravel.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "library",
   "license": "mit",
   "require": {
@@ -12,7 +12,8 @@
   "require-dev": {
     "craftcms/ecs": "dev-main",
     "craftcms/phpstan": "dev-main",
-    "pestphp/pest": "^3.0"
+    "pestphp/pest": "^3.0",
+    "phpstan/phpstan": "^2.0"
   },
   "autoload": {
     "psr-4": {

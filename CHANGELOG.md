@@ -1,5 +1,10 @@
 # Release Notes for Datastar
 
+## 1.0.3 - 2026-08-29
+
+- The package now includes Datastar [1.0.3](https://github.com/starfederation/datastar/releases/tag/v1.0.3).
+- The package now reads signals using the `request` helper instead of the PHP SDK package.
+
 ## 1.0.2 - 2026-06-16
 
 - The package now includes Datastar [1.0.2](https://github.com/starfederation/datastar/releases/tag/v1.0.2).

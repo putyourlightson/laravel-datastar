@@ -8,7 +8,7 @@ namespace Putyourlightson\Datastar\Helpers;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Support\Facades\Validator;
 use Putyourlightson\Datastar\Validation\SignalValidator;
-use starfederation\datastar\ServerSentEventGenerator;
+use starfederation\datastar\Consts;
 
 class Request
 {
@@ -32,6 +32,13 @@ class Request
      */
     public static function readSignals(): array
     {
-        return ServerSentEventGenerator::readSignals();
+        if (in_array(request()->method(), ['GET', 'DELETE'], true)) {
+            $input = request()->query(Consts::DATASTAR_KEY);
+        } else {
+            $input = request()->getContent();
+        }
+        $signals = $input ? json_decode($input, true) : [];
+
+        return is_array($signals) ? $signals : [];
     }
 }
